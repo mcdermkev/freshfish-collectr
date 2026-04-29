@@ -1,0 +1,815 @@
+    <!-- Display Cookie Consent Banner -->
+    <link rel="stylesheet" type="text/css" href="/css/cookie-consent.css">
+
+    <div id="cookie-consent-container" style="display:none;">
+        <div id="cookie-consent-banner">
+            <div class="cookie-consent-banner-item">
+                <p>
+                   This website uses cookies to enhance your browsing experience and ensure the functionality of our site. For more detailed information about the types of cookies we use and how we protect your privacy, please visit our <a href='../cookieMoreinfo.php' target='_blank'>Privacy Information</a> page.
+                </p>
+            </div>
+            <div class="cookie-consent-banner-item">
+                <button id="accept-all">Accept All</button>
+                <button id="accept-necessary">Accept Necessary Cookies Only</button>
+                <button id="cookie-settings">Cookie Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- Cookie Settings Dialog -->
+    <div id="cookie-settings-dialog">
+        <span id="close-dialog">&times;</span>
+        <h3>Cookie Settings</h3>
+        <p>This website uses different types of cookies to enhance your experience. Please select your preferences below:</p>
+
+        <label>
+           <div class="cookie-categ">
+                <span>Strictly Necessary</span>
+                <label class="switch">
+
+                    <input type="checkbox" id="necessary-toggle" checked disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <p>
+                These cookies are essential for the website to function properly. They include session cookies, which help maintain your session while you navigate the site, as well as cookies that remember your language preferences and other essential functionalities. Without these cookies, certain features of the website cannot be provided.
+            </p>
+        </label>
+
+        <label>
+            <div class="cookie-categ">
+                <span>Performance</span>
+                <label class="switch">
+                    <input type="checkbox" id="performance-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <p>
+                These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. For example, we use Google Analytics to generate web statistics, which helps us improve our website's performance and user experience. These cookies may track information such as the pages visited, time spent on the site, and any errors encountered.
+            </p>
+        </label>
+
+        <button id="save-close">Save and Close</button>
+    </div>
+    <script src='/libs/jquery/scripts/cookie.js'></script>
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8">
+<title>Common Name - Search Result</title>
+<link rel="stylesheet" href="/fishbase.css" type="text/css">
+<link rel="stylesheet" href="/css/printscreen.css" type="text/css" media="print">
+<link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen">
+<!-- <script type="text/javascript" src="/libs/jquery/jquery.js"></script> -->
+<!-- <script type="text/javascript" src="/libs/jquery/scripts/common.js"></script> -->
+
+                <link rel="stylesheet" type="text/css" href="/includes/component/assets/css/bootstrap.min.css" type="text/css">
+                <link rel="stylesheet" type="text/css" href="/includes/component/assets/css/dataTables.bootstrap.css">
+                <link rel="stylesheet" type="text/css" href="/includes/component/assets/css/buttons.bootstrap.min.css">
+                <link rel="stylesheet" type="text/css" href="/includes/component/assets/css/table.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+                <script src="/includes/component/assets/js/jquery-3.7.1.js"></script>
+                <script src="/includes/component/assets/js/jquery-ui.js"></script>
+                <script src="/includes/component/assets/js/dataTables.js"></script>
+                <script src="/includes/component/assets/js/dataTables.bootstrap.js"></script>
+                <script src="/includes/component/assets/js/buttons.min.js"></script>
+            <script>
+	function googleTranslateElementInit() {
+	  new google.translate.TranslateElement({
+		pageLanguage: 'en',
+		includedLanguages: 'af,sq,ar,be,bg,ca,zh-CN,zh-TW,hr,cs,da,nl,en,et,tl,fi,fr,gl,de,el,ht,iw,hi,hu,is,id,ga,it,ja,ko,lv,lt,mk,ms,mt,no,fa,pl,pt,ro,ru,sr,sk,sl,es,sw,sv,th,tr,uk,vi,cy,yi'
+	  }, 'google_translate_element');
+	}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<SCRIPT>
+<!--
+	var browserName=navigator.appName;
+	if (browserName=="Netscape")
+	{
+	 document.write("");
+	 //document.write("Hi Netscape User!");
+	}
+	else
+	{
+	 if (browserName=="Microsoft Internet Explorer")
+	 {
+	  document.write('<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">');
+	  //alert("Hi, Explorer User!");
+	 }
+	 if (browserName=="Opera")
+	 {
+	  document.write("");
+	  //alert("Hi, Opera User!");
+	 }
+	if (browserName=="Chrome")
+	 {
+	  document.write("");
+	  //alert("Hi, Chrome User!");
+	 }
+	if (browserName=="Firefox")
+	 {
+	  document.write("");
+	  //alert("Hi, Firefox User!");
+	 }
+	 else
+	  {
+		document.write('<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">');
+		//alert("What ARE you browsing with here?");
+	   }
+	}
+//-->
+</SCRIPT>
+
+</head>
+
+<body bgcolor="#FFFFFF">
+<a name="CommonName"></a>
+
+<!--- First Row ---->
+<div class="navsheader" id="top">
+				<div class="onethird lalign">
+					<a href="/search.php" alt="Go back to Search page">
+						<img src="/images/png/fb-nav.png" height="35"/>
+					</a>
+				</div>
+				<div class="onethird calign"><div id="google_translate_element"></div></div>
+				<div class="onethird ralign"><a href="/manual/English/FishbaseThe_Common_Names_Table.htm" target="_blank">More info</a>&nbsp;|
+<a href="/manual/French/FishbaseNomenclature.htm#0036e1c0" target="_blank">Plus d'info.</a>&nbsp;|
+<a href="/manual/Portuguese/FishbaseThe_Common_Names_Table.htm" target="_blank">Mais info</a></div>
+			</div>
+<!--- First Row ---->
+
+	
+	<form name="cn_search_form" method="POST" action="" onsubmit="return submit_search()">
+
+		<div class="grid-container">
+			<div class="row-grid">
+				<b>
+					Common Name				</b>
+			</div>
+
+			<div class="row-grid">
+				<span class="grid-item"></span>
+				<select class="grid-item" width="250" style="width:250px" id="lang-select" name="language" onchange="updateCountries()">
+					<option value=""></option>
+					<!-- Options will be dynamically populated based on fetched data -->
+				</select>
+				<select class="grid-item" width="250" style="width:250px; display:none;" id="country-select" name="country">
+					<!-- Options will be dynamically populated based on language selection -->
+				</select>
+			</div>
+
+			<div class="row-grid">
+				<span class="grid-item"></span>
+				<SELECT class="grid-item" name="crit1_operator" size="1">
+					<OPTION value="CONTAINS"  selected >
+						contains					<OPTION value="BEGINS_WITH" >
+						begins with					<OPTION value="ENDS_WITH" >
+						ends with					<OPTION value="EQUAL" >
+						is				</SELECT>
+				<input class="grid-item" type="text" name="search_text" onsubmit="" value="Red Devil" />
+
+				<input class="grid-item" type="submit" name="search_button" value="Search" />
+			</div>
+		</div>
+	</form>
+
+	<!-- <br /> -->
+	<hr width="70%">
+	<!--- Header ---->
+
+
+
+<div class='pheader'>List of  Common Names with 'red devil'</div><span class='p_remark2'>[n=5] <br /><br /></span><a href='#' class='toggle-vis' data-column='0'>Show Pictures</a>	<table class='tbl-norecord noborderx'>
+					<caption></caption>
+					
+				</table>
+
+
+<div class="container container_table">
+
+    <div class="loading_row show_element">
+        <div class="loader"></div>
+    </div>
+
+    <div class="table_row hide_element">
+        <table id="table_filter" class="display" style="width:100%;">
+            <!-- <caption>List Data</caption> -->
+            <thead>
+                <tr style="background: #4683de; color: #fff;">
+
+                    <th class='column-picture'>Pictures</th>
+                    <th>
+                        <div style='display: flex;'>
+                                Common Name
+                            <li class='dropdown' style='padding: 0 0 0 5px;'>
+                                <a data-toggle='dropdown' id='dropdown-toggle' class='dropdown-toggle'>
+                                    <b class='caret' style='color: black;'></b>
+                                </a>
+
+                                <ul id='dropdown-menu' class='dropdown-menu'>
+                                    <div class='dropdown-button'>
+                                        <button id='' class='btn btn-primary btn-sm fa-solid fa-filter-circle-xmark clear-filter' title='Reset filter'>
+                                        </button>
+
+                                        <button id='' class='btn btn-danger btn-sm fa-solid fa-circle-xmark close-dropdown' title='Close filter'>
+                                        </button>
+
+                                    </div>
+
+                                    <li style='color: #333; font-family: 'Roboto, sans-serif; float: left;'>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Red devil'> Red devil
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Red devil cichlid'> Red devil cichlid
+                    </label>
+                
+                                    </li>
+                                </ul>
+                            </li>
+                        </div>
+                        <span class='p_remark2'><a href='/ComNames/CommonNameSearchList.php?CommonName=Red+Devil&crit1_operator=EQUAL&language=&selected_territory='>Show only direct matches</span>
+                    </th>
+                
+                    <th>
+                        <div style='display: flex;'>
+                                Language
+                            <li class='dropdown' style='padding: 0 0 0 5px;'>
+                                <a data-toggle='dropdown' id='dropdown-toggle' class='dropdown-toggle'>
+                                    <b class='caret' style='color: black;'></b>
+                                </a>
+
+                                <ul id='dropdown-menu' class='dropdown-menu'>
+                                    <div class='dropdown-button'>
+                                        <button id='' class='btn btn-primary btn-sm fa-solid fa-filter-circle-xmark clear-filter' title='Reset filter'>
+                                        </button>
+
+                                        <button id='' class='btn btn-danger btn-sm fa-solid fa-circle-xmark close-dropdown' title='Close filter'>
+                                        </button>
+
+                                    </div>
+
+                                    <li style='color: #333; font-family: 'Roboto, sans-serif; float: left;'>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='English'> English
+                    </label>
+                
+                                    </li>
+                                </ul>
+                            </li>
+                        </div>
+                        
+                    </th>
+                
+                    <th>
+                        <div style='display: flex;'>
+                                Territory
+                            <li class='dropdown' style='padding: 0 0 0 5px;'>
+                                <a data-toggle='dropdown' id='dropdown-toggle' class='dropdown-toggle'>
+                                    <b class='caret' style='color: black;'></b>
+                                </a>
+
+                                <ul id='dropdown-menu' class='dropdown-menu'>
+                                    <div class='dropdown-button'>
+                                        <button id='' class='btn btn-primary btn-sm fa-solid fa-filter-circle-xmark clear-filter' title='Reset filter'>
+                                        </button>
+
+                                        <button id='' class='btn btn-danger btn-sm fa-solid fa-circle-xmark close-dropdown' title='Close filter'>
+                                        </button>
+
+                                    </div>
+
+                                    <li style='color: #333; font-family: 'Roboto, sans-serif; float: left;'>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Alaska'> Alaska
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Canada'> Canada
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Philippines'> Philippines
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='US of America'> US of America
+                    </label>
+                
+                                    </li>
+                                </ul>
+                            </li>
+                        </div>
+                        
+                    </th>
+                
+                    <th>
+                        <div style='display: flex;'>
+                                Species
+                            <li class='dropdown' style='padding: 0 0 0 5px;'>
+                                <a data-toggle='dropdown' id='dropdown-toggle' class='dropdown-toggle'>
+                                    <b class='caret' style='color: black;'></b>
+                                </a>
+
+                                <ul id='dropdown-menu' class='dropdown-menu'>
+                                    <div class='dropdown-button'>
+                                        <button id='' class='btn btn-primary btn-sm fa-solid fa-filter-circle-xmark clear-filter' title='Reset filter'>
+                                        </button>
+
+                                        <button id='' class='btn btn-danger btn-sm fa-solid fa-circle-xmark close-dropdown' title='Close filter'>
+                                        </button>
+
+                                    </div>
+
+                                    <li style='color: #333; font-family: 'Roboto, sans-serif; float: left;'>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Amphilophus citrinellus'> Amphilophus citrinellus
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Amphilophus labiatus'> Amphilophus labiatus
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Cryptacanthodes aleutensis'> Cryptacanthodes aleutensis
+                    </label>
+                
+                                    </li>
+                                </ul>
+                            </li>
+                        </div>
+                        
+                    </th>
+                
+                    <th>
+                        <div style='display: flex;'>
+                                Type
+                            <li class='dropdown' style='padding: 0 0 0 5px;'>
+                                <a data-toggle='dropdown' id='dropdown-toggle' class='dropdown-toggle'>
+                                    <b class='caret' style='color: black;'></b>
+                                </a>
+
+                                <ul id='dropdown-menu' class='dropdown-menu'>
+                                    <div class='dropdown-button'>
+                                        <button id='' class='btn btn-primary btn-sm fa-solid fa-filter-circle-xmark clear-filter' title='Reset filter'>
+                                        </button>
+
+                                        <button id='' class='btn btn-danger btn-sm fa-solid fa-circle-xmark close-dropdown' title='Close filter'>
+                                        </button>
+
+                                    </div>
+
+                                    <li style='color: #333; font-family: 'Roboto, sans-serif; float: left;'>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Aquarium'> Aquarium
+                    </label>
+                
+                    <label class='checkbox'>
+                        <input type='checkbox' class='cbox_th' value='Vernacular'> Vernacular
+                    </label>
+                
+                                    </li>
+                                </ul>
+                            </li>
+                        </div>
+                        
+                    </th>
+                
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+    var table_id_arr = ["table_filter"];
+    var table_name_arr = {"table_filter":"Table"};
+    var table_data_arr = {"table_filter":[["<img src='\/images\/thumbnails\/jpg\/tn_Amcit_u4.jpg' alt='Amcit_u4.jpg' \/>","<a href='..\/summary\/SpeciesSummary.php?ID=4786&AT=Red+Devil'>Red devil","English","Philippines","<i><a href='..\/summary\/SpeciesSummary.php?ID=4786&AT=Red+Devil'>Amphilophus citrinellus<\/a><\/i>","<a href='CommonNameSummary.php?autoctr=65402'>Aquarium<\/a>"],["<img src='\/images\/thumbnails\/jpg\/tn_Amcit_u4.jpg' alt='Amcit_u4.jpg' \/>","<a href='..\/summary\/SpeciesSummary.php?ID=4786&AT=Red+Devil'>Red devil cichlid","English","US of America","<i><a href='..\/summary\/SpeciesSummary.php?ID=4786&AT=Red+Devil'>Amphilophus citrinellus<\/a><\/i>","<a href='CommonNameSummary.php?autoctr=65404'>Vernacular<\/a>"],["<img src='\/images\/thumbnails\/jpg\/tn_Amlab_f0.jpg' alt='Amlab_f0.jpg' \/>","<a href='..\/summary\/SpeciesSummary.php?ID=28238&AT=Red+Devil'>Red devil","English","US of America","<i><a href='..\/summary\/SpeciesSummary.php?ID=28238&AT=Red+Devil'>Amphilophus labiatus<\/a><\/i>","<a href='CommonNameSummary.php?autoctr=65403'>Vernacular<\/a>"],["<img src='\/images\/thumbnails\/gif\/tn_Crale_u0.gif' alt='Crale_u0.gif' \/>","<a href='..\/summary\/SpeciesSummary.php?ID=3817&AT=Red+Devil'>Red devil","English","Canada","<i><a href='..\/summary\/SpeciesSummary.php?ID=3817&AT=Red+Devil'>Cryptacanthodes aleutensis<\/a><\/i>","<a href='CommonNameSummary.php?autoctr=65399'>Vernacular<\/a>"],["<img src='\/images\/thumbnails\/gif\/tn_Crale_u0.gif' alt='Crale_u0.gif' \/>","<a href='..\/summary\/SpeciesSummary.php?ID=3817&AT=Red+Devil'>Red devil","English","Alaska","<i><a href='..\/summary\/SpeciesSummary.php?ID=3817&AT=Red+Devil'>Cryptacanthodes aleutensis<\/a><\/i>","<a href='CommonNameSummary.php?autoctr=65401'>Vernacular<\/a>"]]};
+    var table_header = {"table_filter":["Pictures","Common Name<br><span class='p_remark2'><a href='\/ComNames\/CommonNameSearchList.php?CommonName=Red+Devil&crit1_operator=EQUAL&language=&selected_territory='>Show only direct matches<\/span>","Language","Territory","Species","Type"]};
+    var table_loc = "default";
+
+    $(document).ready(function() {
+
+        $('.loading_row').removeClass('show_element');
+        $('.loading_row').addClass('hide_element');
+        $('.table_row').removeClass('hide_element');
+
+        var dropdown_filter = "";
+        table_id_arr.forEach(function(value){
+
+            let table = new DataTable('#' + value, {
+                destroy: true,
+                // "accept":"UTF-8",
+                data: table_data_arr[value],
+                // ordering: true,
+                order: [],
+                type: false,
+                lengthMenu: [
+                    50,
+                    100,
+                    500,
+                    1000,
+                    {
+                        label: 'All',
+                        value: -1
+                    }
+                ],
+                iDisplayLength: 500,
+
+                language: {
+                    lengthMenu: 'Show &nbsp; _MENU_',
+                    info: '_START_ to _END_ of _TOTAL_ records',
+                    search: 'Search Filter:'
+                },
+
+                layout: {
+
+                    topStart: {
+                        pageLength: true,
+                        info: true,
+                        paging: true
+                    },
+
+                    topEnd: {
+                        search: {
+                            "caseInsensitive": true
+                        },
+                        buttons: [
+                            {
+                                text: '',
+                                attr: {
+                                    'title': 'Download',
+                                },
+                                className: 'btn btn-primary fa-solid fa-download',
+                                action: function () {
+                                    download_CSV(table_name_arr[value], table_header[value], table_data_arr[value], table_loc)
+                                },
+
+                            },
+                        ],
+                    },
+
+                    bottomStart: {
+                        pageLength: true,
+                        info: true,
+                        paging: true
+                    },
+
+                    bottomEnd: {
+                        paging: true,
+                        buttons: [
+                            {
+                                text: '',
+                                attr: {
+                                    'title': 'Download CSV',
+                                },
+                                className: 'btn btn-primary fa-solid fa-download',
+                                action: function () {
+                                    download_CSV(table_name_arr[value], table_header[value], table_data_arr[value], table_loc)
+                                },
+                            },
+                        ],
+                    }
+                }
+            });
+
+            table.on('page.dt', function() {
+                    var tableOffset = $('#' + value).offset().top;
+                    $('html, body').animate({ scrollTop: tableOffset });
+            });
+
+            table.on('order.dt', function () {
+                const cb = document.getElementById('countrysortby');
+                if (cb) {
+                    cb.checked = false;
+                }
+            });
+            // Hide download button + dt-buttons div
+            // if (window.location.pathname.includes('/tools/UploadPhoto/list.php')) {
+            //     document.querySelectorAll('.dt-buttons').forEach(el => el.style.display = 'none');
+            // }
+
+        let elementsToHide = [0];
+        elementsToHide.forEach(function(selector) {
+            table.column(selector).visible(false);
+        });
+
+        $('a.toggle-vis').each(function() {
+            $(this).on('click', function(e) {
+                e.preventDefault();
+
+                let columnIdx = $(this).data('column'); // Using jQuery's data method
+                let column = table.column(columnIdx);
+
+                let isVisible = !column.visible();
+                column.visible(isVisible);
+
+                let columnText = $(this).text();
+                if (columnText.includes('Show'))
+                    $(this).text(columnText.replace("Show", "Hide"));
+                else
+                    $(this).text(columnText.replace("Hide", "Show"));
+
+            });
+        });
+
+        $('.p_remark2').on('click', function(event) {
+            event.stopPropagation();
+        });
+
+
+        $('#example_paginate').clone(true).prependTo('#example_wrapper').addClass('top-pagination');
+
+        var filters = {};
+
+        $('.dropdown-toggle').on('click', function(event) {
+            event.stopPropagation();
+
+            var $dropdownMenu = $(this).next('.dropdown-menu');
+
+            toggle_dropdown($dropdownMenu);
+        });
+
+        $('.dropdown-menu').on('click', function(event) {
+            event.stopPropagation();
+        });
+
+        $(document).on('change', '.cbox_th', function() {
+            var $checkbox = $(this);
+            //var value = $checkbox.val();
+            var value = decodeHtmlEntities($checkbox.val());
+
+            var $dropdownMenu = $checkbox.closest('.dropdown-menu');
+            var th = $dropdownMenu.closest('th');
+            var headerIndex = table.column(th).index();
+
+            console.log("Filtering column index: " + headerIndex + " with value: " + value);
+
+            if ($checkbox.prop('checked')) {
+                add_filter(headerIndex, value);
+            } else {
+                remove_filter(headerIndex, value);
+            }
+
+            table.draw();
+        });
+
+        $('.close-dropdown').on('click', function() {
+            var $dropdownMenu = $(this).closest('.dropdown-menu');
+            toggle_dropdown($dropdownMenu);
+        });
+
+        $('.clear-filter').on('click', function() {
+            var $dropdownMenu = $(this).closest('.dropdown-menu');
+            var th = $dropdownMenu.closest('th');
+            var headerIndex = table.column(th).index();
+
+            $dropdownMenu.find('input[type="checkbox"]').each(function() {
+
+                if ($(this).prop('checked')) {
+                    $(this).prop('checked', false);
+                    var value = decodeHtmlEntities($(this).val());
+
+                    var headerIndex = table.column($(this).closest('th')).index();
+                    remove_filter(headerIndex, value);
+                }
+            });
+
+            table.draw();
+        });
+
+        function decodeHtmlEntities(str) {
+            var txt = document.createElement('textarea');
+            txt.innerHTML = str;
+            return txt.value;
+        }
+
+        function toggle_dropdown($menu) {
+            $menu.toggleClass('show');
+        }
+
+        function escapeRegex(text) {
+            // Escape regex special characters EXCEPT the pipe (|) which we use for OR logic
+            return text.replace(/[.*+?^${}()[\]\\]/g, '\\$&');
+        }
+
+        function normalizeText(text) {
+            if (!text) return '';
+
+            let normalized = text.normalize('NFC');
+
+            // Detect if text is likely Vietnamese (special chars or tone marks)
+            const isVietnamese = /[ăâắãàấạậặêẽếẹôốớỏơọụưđỷĂÂÊÔƠƯĐ]/.test(normalized) ||
+                                 /[\u0300\u0301\u0303\u0309\u0323]/.test(normalized);
+
+            if (!isVietnamese && /[\u0041-\u024F]/.test(normalized)) {
+                // Remove diacritics for non-Vietnamese Latin text
+                normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+
+            return normalized;
+        }
+
+        function add_filter(headerIndex, value) {
+            if (!filters[headerIndex]) {
+                filters[headerIndex] = [];
+            }
+            if (!filters[headerIndex].includes(value)) {
+                filters[headerIndex].push(value);
+            }
+            apply_filter(headerIndex);
+        }
+
+        function remove_filter(headerIndex, value) {
+            if (filters[headerIndex]) {
+                var index = filters[headerIndex].indexOf(value);
+                if (index > -1) {
+                    filters[headerIndex].splice(index, 1);
+                }
+            }
+            apply_filter(headerIndex);
+        }
+
+        function apply_filter(headerIndex) {
+            const filterTerms = filters[headerIndex] || [];
+
+            if (filterTerms.length === 0) {
+                table.column(headerIndex).search('').draw();
+                return;
+            }
+
+            // Normalize + escape each term safely
+            const safeTerms = filterTerms.map(term =>
+                escapeRegex(normalizeText(term))
+            );
+
+            // Combine terms as an OR pattern
+            const pattern = safeTerms.join('|');
+
+            // Use Unicode + case-insensitive regex
+            const regex_filter = new RegExp('(?:' + pattern + ')', 'iu');
+
+            // Apply to the DataTable
+            table.column(headerIndex).search(regex_filter).draw();
+        }
+
+        });
+    });
+
+    function download_CSV (table_name, header_data, data, table_loc) {
+        $.ajax({
+            url: "/includes/component/datatable/php/download_csv.php",
+            method: "POST",
+            xhrFields: {
+                responseType: 'blob' // Handle binary data
+            },
+            data: {
+                table_header: JSON.stringify(header_data),
+                table_data: JSON.stringify(data),
+                table_loc: table_loc,
+            },
+            success: function (result) {
+                // Create a download link for the response blob
+                //console.log(result);
+                var a = document.createElement('a');
+                var url = window.URL.createObjectURL(result);
+                a.href = url;
+                a.download = table_name + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url); // Clean up URL object
+            },
+            error: function (error) {
+                //console.error("Error downloading CSV:", error);
+            }
+        });
+    }
+
+</script>
+
+
+<!--- Footer ---->
+<div class="sfooter">
+						<div class="onethird lalign"><a href="/search.php">Back to Search</a></div>
+						<div class="onethird calign"></div>
+						<div class="onethird ralign"><a href="#">Back to Top</a></div>
+					</div>
+<script>
+	let data = [{"languagename":"Aceh","lcount":"0","lcountry":null},{"languagename":"Adangme","lcount":"0","lcountry":null},{"languagename":"Adioukrou","lcount":"1","lcountry":"Ivory coast:384"},{"languagename":"Afrikaans","lcount":"5","lcountry":"Malawi:454#Namibia:516#South Africa:710#Zambia:894#Zimbabwe:716"},{"languagename":"Agutaynen","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Aizi","lcount":"1","lcountry":"Ivory coast:384"},{"languagename":"Akan","lcount":"1","lcountry":"Ghana:288"},{"languagename":"Aladian","lcount":"1","lcountry":"Ivory coast:384"},{"languagename":"Albanian","lcount":"1","lcountry":"Albania:008"},{"languagename":"Alur","lcount":"1","lcountry":"Congo (DR;Kin.):180"},{"languagename":"Alutiiq","lcount":"1","lcountry":"Alaska:840A"},{"languagename":"Amharic","lcount":"3","lcountry":"Egypt:818#Ethiopia:230#Israel:376"},{"languagename":"Arabic","lcount":"24","lcountry":"Algeria:012#Bahrain:048#Chad:148#Cyprus:196#Egypt:818#Iran:364#Iraq:368#Israel:376#Jordan:400#Kuwait:414#Lebanon:422#Libya:434#Mauritania:478#Morocco:504#Niger:562#Oman:512#Qatar:634#Saudi Arabia:682#Sudan (North):736#Syria:760#Tunisia:788#Un. Arab Emir.:784#Uzbekistan:860#Yemen:887"},{"languagename":"Arabic, Hassaniya","lcount":"6","lcountry":"Algeria:012#Mali:466#Mauritania:478#Morocco:504#Niger:562#Senegal:686"},{"languagename":"Assamese","lcount":"3","lcountry":"Bangladesh:050#Bhutan:064#India:356"},{"languagename":"Avikam","lcount":"1","lcountry":"Ivory coast:384"},{"languagename":"Bahasa Indonesia","lcount":"4","lcountry":"Brunei Daruss.:096#Indonesia:360#Malaysia:458#Singapore:702"},{"languagename":"Bajo","lcount":"0","lcountry":null},{"languagename":"Bali","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Baluchi","lcount":"7","lcountry":"Afghanistan:004#India:356#Iran:364#Oman:512#Pakistan:586#Turkmenistan:795#Un. Arab Emir.:784"},{"languagename":"Bambara","lcount":"7","lcountry":"Burkina Faso:854#Gambia:270#Guinea:324#Ivory coast:384#Mali:466#Mauritania:478#Senegal:686"},{"languagename":"Banton","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Baoul\u00e9","lcount":"0","lcountry":null},{"languagename":"Basque","lcount":"2","lcountry":"France:250#Spain:724"},{"languagename":"Bata","lcount":"2","lcountry":"Cameroon:120#Nigeria:566"},{"languagename":"Batak Toba","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Bemba","lcount":"3","lcountry":"Congo (DR;Kin.):180#Tanzania:834#Zambia:894"},{"languagename":"Bengali","lcount":"4","lcountry":"Bangladesh:050#India:356#Singapore:702#Un. Arab Emir.:784"},{"languagename":"Bihari","lcount":"1","lcountry":"India:356"},{"languagename":"Bikol","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Bislama","lcount":"2","lcountry":"New Caledonia:540#Vanuatu:548"},{"languagename":"Bissa","lcount":"2","lcountry":"Ghana:288#Togo:768"},{"languagename":"Bokobaru","lcount":"0","lcountry":null},{"languagename":"Bolinao","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Bontoc","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Boor","lcount":"0","lcountry":null},{"languagename":"Bosnian","lcount":"1","lcountry":"Bosnia Herzego.:070"},{"languagename":"Bozo","lcount":"0","lcountry":null},{"languagename":"Breton","lcount":"1","lcountry":"France:250"},{"languagename":"Bua","lcount":"0","lcountry":null},{"languagename":"Bube","lcount":"0","lcountry":null},{"languagename":"Buduma","lcount":"0","lcountry":null},{"languagename":"Bugis","lcount":"2","lcountry":"Indonesia:360#Malaysia:458"},{"languagename":"Bulgarian","lcount":"5","lcountry":"Bulgaria:100#Greece:300#Moldova:498#Romania:642#T\u00fcrkiye:792"},{"languagename":"Bunuba","lcount":"1","lcountry":"Australia:036"},{"languagename":"Burmese","lcount":"2","lcountry":"Bangladesh:050#Myanmar:104"},{"languagename":"Busa","lcount":"0","lcountry":null},{"languagename":"Cantonese","lcount":"7","lcountry":"China:156#Hong Kong:344#Indonesia:360#Macau \/ Macao:446#Malaysia:458#Singapore:702#Viet Nam:704"},{"languagename":"Carolinian","lcount":"1","lcountry":"Micronesia:583"},{"languagename":"Catalan","lcount":"4","lcountry":"Andorra:020#France:250#Italy:380#Spain:724"},{"languagename":"Cebuano","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Chamorro","lcount":"2","lcountry":"Guam:316#North. Marianas:580"},{"languagename":"Chavacano","lcount":"2","lcountry":"Malaysia:458#Philippines:608"},{"languagename":"Chiga","lcount":"1","lcountry":"Uganda:800"},{"languagename":"Chilungu","lcount":"0","lcountry":null},{"languagename":"Chinook","lcount":"2","lcountry":"Canada:124#US of America:840"},{"languagename":"Chokwe","lcount":"3","lcountry":"Angola:024#Congo (DR;Kin.):180#Zambia:894"},{"languagename":"Comorian","lcount":"4","lcountry":"Comoros:174#Madagascar:450#Mayotte:175#Reunion [La]:638"},{"languagename":"Corsican","lcount":"9","lcountry":"Bolivia:068#Canada:124#Cuba:192#France:250#Italy:380#Puerto Rico:630#Uruguay:858#US of America:840#Venezuela:862"},{"languagename":"Cree","lcount":"2","lcountry":"Canada:124#US of America:840"},{"languagename":"Creole, Dutch","lcount":"1","lcountry":"Netherlands:528"},{"languagename":"Creole, English","lcount":"7","lcountry":"Australia:036#Cameroon:120#Equator. Guinea:226#Gambia:270#Nigeria:566#Sierra Leone:694#UK Gr. Britain:826"},{"languagename":"Creole, French","lcount":"6","lcountry":"Br Indian Oc Tr:086#France:250#Haiti:332#Mauritius:480#Reunion [La]:638#Seychelles:690"},{"languagename":"Creole, German","lcount":"1","lcountry":"Germany:276"},{"languagename":"Creole, Portuguese","lcount":"11","lcountry":"Cape Verde:132#Gambia:270#Guinea-Bissau:624#Hong Kong:344#India:356#Indonesia:360#Macau \/ Macao:446#Malaysia:458#Portugal:620#Senegal:686#Singapore:702"},{"languagename":"Croatian","lcount":"8","lcountry":"Bosnia Herzego.:070#Croatia:191#Germany:276#Greece:300#North Macedonia:807#Romania:642#Slovakia:703#Sweden:752"},{"languagename":"Czech","lcount":"3","lcountry":"Austria:040#Czechia:203#Ukraine:804"},{"languagename":"Dama","lcount":"1","lcountry":"Cameroon:120"},{"languagename":"Danish","lcount":"3","lcountry":"Denmark:208#Germany:276#Greenland:304"},{"languagename":"Davawenyo","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Day","lcount":"1","lcountry":"Chad:148"},{"languagename":"Digo","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Dinka, Northeastern","lcount":"1","lcountry":"Sudan (North):736"},{"languagename":"Djuka","lcount":"2","lcountry":"French Guiana:254#Suriname:740"},{"languagename":"Duala","lcount":"1","lcountry":"Cameroon:120"},{"languagename":"Dutch","lcount":"5","lcountry":"Aruba:533#Belgium:056#France:250#Netherlands:528#Suriname:740"},{"languagename":"Efik","lcount":"2","lcountry":"Cameroon:120#Nigeria:566"},{"languagename":"Ejagham","lcount":"2","lcountry":"Cameroon:120#Nigeria:566"},{"languagename":"El Molo","lcount":"1","lcountry":"Kenya:404"},{"languagename":"English","lcount":"102","lcountry":"Alaska:840A#American Samoa:016#Anguilla:660#Antigua Barbuda:028#Ascension I.:826E#Australia:036#Bahamas:044#Barbados:052#Belize:084#Bermuda:060#Bouvet I.:074#Br Antarctic Tr:826H#Br Indian Oc Tr:086#Brunei Daruss.:096#Cameroon:120#Canada:124#Cayman Is.:136#Chagos Is.:826F#Channel Is.:830#Christmas I.:162#Cocos\/Keel. Is.:166#Cook Is.:184#Dominica:212#Eswatini:748#Ethiopia:230#Falk.\/Malv. Is.:238#Fiji:242#Gambia:270#Ghana:288#Gibraltar:292#Grenada:308#Guam:316#Guyana:328#Hawaii:840B#Heard McDon Is.:334#Honduras:340#Hong Kong:344#India:356#Ireland:372#Isle of Man:833#Israel:376#Jamaica:388#Johnston I.:396#Kenya:404#Kiribati:296#Lesotho:426#Liberia:430#Malawi:454#Malaysia:458#Malta:470#Marshall Is.:584#Mauritius:480#Micronesia:583#Midway Is.:488#Montserrat:500#Mozambique:508#Namibia:516#Nauru:520#Netherlands:528#New Zealand:554#Nigeria:566#Niue:570#Norfolk I.:574#North. Marianas:580#Pac Is Trust Tr:582#Pakistan:586#Palau:585#Papua New Guin.:598#Philippines:608#Pitcairn:612#Puerto Rico:630#Samoa:882#Seychelles:690#Sierra Leone:694#Singapore:702#Solomon Is.:090#Somalia:706#South Africa:710#Sri Lanka:144#St Hel Asc Tris:654#St Kitts Nevis:659#St Lucia:662#St Vincent Gren:670#Suriname:740#Tanzania:834#Tokelau:772#Tonga:776#Trinidad Tobago:780#Tristan Cunha:826G#Turks Caicos Is:796#Uganda:800#UK Engld Wal:826A#UK Gr. Britain:826#UK No Ireld:826C#UK Scotland:826B#US Misc Pac:849#US of America:840#Virgin Is. (GB):092#Virgin Is. (US):850#Wake I.:872#Zambia:894#Zimbabwe:716"},{"languagename":"Estonian","lcount":"2","lcountry":"Estonia:233#Finland:246"},{"languagename":"Ewe","lcount":"2","lcountry":"Ghana:288#Togo:768"},{"languagename":"Fang","lcount":"1","lcountry":"Gabon:266"},{"languagename":"Faroese","lcount":"1","lcountry":"Faroe Is.:234"},{"languagename":"Farsi","lcount":"9","lcountry":"Afghanistan:004#Bahrain:048#Iran:364#Iraq:368#Oman:512#Pakistan:586#Qatar:634#Tajikistan:762#Un. Arab Emir.:784"},{"languagename":"Fijian","lcount":"3","lcountry":"Fiji:242#New Zealand:554#Vanuatu:548"},{"languagename":"Finnish","lcount":"4","lcountry":"Estonia:233#Finland:246#Norway:578#Sweden:752"},{"languagename":"Foi","lcount":"0","lcountry":null},{"languagename":"Fon Gbe","lcount":"2","lcountry":"Benin:204#Togo:768"},{"languagename":"French","lcount":"50","lcountry":"Algeria:012#Amsterdam I.:260A#Andorra:020#Belgium:056#Benin:204#Burkina Faso:854#Burundi:108#Cameroon:120#Centr. Af. Rp.:140#Chad:148#Clipperton I.:I250#Comoros:174#Congo (Brazza.):178#Congo (DR;Kin.):180#Djibouti:262#Fr. Polynesia:258#France:250#French Guiana:254#French South Tr:260#Gabon:266#Gambia:270#Guadeloupe:312#Guinea:324#Guyana:328#Haiti:332#Italy:380#Ivory coast:384#Liberia:430#Luxembourg:442#Madagascar:450#Mali:466#Martinique:474#Mauritania:478#Mayotte:175#Monaco:492#Mozambique:508#New Caledonia:540#Niger:562#Puerto Rico:630#Rwanda:646#Senegal:686#Seychelles:690#Society Is.:250A#St Pierre Miq.:666#Switzerland:756#Togo:768#Tuamotu Is.:250C#Tunisia:788#Vanuatu:548#Wallis Futuna:876"},{"languagename":"Fulfulde, Adamawa","lcount":"1","lcountry":"Cameroon:120"},{"languagename":"Fulfulde, Pulaar","lcount":"6","lcountry":"Gambia:270#Guinea:324#Guinea-Bissau:624#Mali:466#Mauritania:478#Senegal:686"},{"languagename":"Fw\u00e2i","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Ga","lcount":"1","lcountry":"Ghana:288"},{"languagename":"Gadang","lcount":"0","lcountry":null},{"languagename":"Gaelic, Irish","lcount":"1","lcountry":"Ireland:372"},{"languagename":"Gaelic, Scottish","lcount":"0","lcountry":null},{"languagename":"Galibi","lcount":"5","lcountry":"Brazil:076#French Guiana:254#Guyana:328#Suriname:740#Venezuela:862"},{"languagename":"Galoa","lcount":"1","lcountry":"Gabon:266"},{"languagename":"Gambai","lcount":"2","lcountry":"Chad:148#Nigeria:566"},{"languagename":"Gbaya-Bossangoa","lcount":"0","lcountry":null},{"languagename":"Gbe, Tofin","lcount":"1","lcountry":"Benin:204"},{"languagename":"Gela","lcount":"1","lcountry":"Solomon Is.:090"},{"languagename":"Gen-Gbe","lcount":"2","lcountry":"Benin:204#Togo:768"},{"languagename":"German","lcount":"31","lcountry":"Argentina:032#Australia:036#Austria:040#Belgium:056#Bolivia:068#Brazil:076#Chile:152#Czechia:203#Denmark:208#Ecuador:218#Germany:276#Hungary:348#Italy:380#Kazakhstan:398#Kyrgyzstan:417#Liechtenstein:438#Luxembourg:442#Moldova:498#Namibia:516#Paraguay:600#Poland:616#Puerto Rico:630#Romania:642#Russia:643#Slovenia:705#South Africa:710#Switzerland:756#Un. Arab Emir.:784#Uruguay:858#US of America:840#Uzbekistan:860"},{"languagename":"Gikuyu","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Giryama","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Gooniyandi","lcount":"1","lcountry":"Australia:036"},{"languagename":"Greek","lcount":"27","lcountry":"Albania:008#Armenia:051#Australia:036#Austria:040#Bahamas:044#Bulgaria:100#Canada:124#Congo (Brazza.):178#Cyprus:196#Djibouti:262#Egypt:818#Georgia:268#Germany:276#Greece:300#Italy:380#Kazakhstan:398#Malawi:454#Paraguay:600#Poland:616#Russia:643#Sierra Leone:694#South Africa:710#Sweden:752#T\u00fcrkiye:792#UK Gr. Britain:826#Ukraine:804#US of America:840"},{"languagename":"Greenlandic","lcount":"2","lcountry":"Denmark:208#Greenland:304"},{"languagename":"Guarani","lcount":"4","lcountry":"Argentina:032#Bolivia:068#Brazil:076#Paraguay:600"},{"languagename":"Gujarati","lcount":"9","lcountry":"Fiji:242#India:356#Kenya:404#Malawi:454#Singapore:702#Uganda:800#UK Gr. Britain:826#Zambia:894#Zimbabwe:716"},{"languagename":"Gungu","lcount":"0","lcountry":null},{"languagename":"Guro","lcount":"0","lcountry":null},{"languagename":"Guugu Yimidhirr","lcount":"1","lcountry":"Australia:036"},{"languagename":"Haida","lcount":"1","lcountry":"US of America:840"},{"languagename":"Hausa","lcount":"11","lcountry":"Benin:204#Burkina Faso:854#Cameroon:120#Centr. Af. Rp.:140#Chad:148#Congo (Brazza.):178#Ghana:288#Niger:562#Nigeria:566#Sudan (North):736#Togo:768"},{"languagename":"Hawaiian","lcount":"1","lcountry":"Hawaii:840B"},{"languagename":"Hebrew","lcount":"2","lcountry":"Israel:376#US of America:840"},{"languagename":"Heiltsuk","lcount":"0","lcountry":null},{"languagename":"Hiligaynon","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Hima","lcount":"1","lcountry":"Burundi:108"},{"languagename":"Hindi","lcount":"17","lcountry":"Bangladesh:050#Fiji:242#Germany:276#India:356#Kenya:404#Mauritius:480#Nauru:520#Nepal:524#New Zealand:554#Pakistan:586#Singapore:702#South Africa:710#Uganda:800#UK Gr. Britain:826#Un. Arab Emir.:784#US of America:840#Yemen:887"},{"languagename":"Ho","lcount":"1","lcountry":"India:356"},{"languagename":"Hungarian","lcount":"10","lcountry":"Australia:036#Austria:040#Canada:124#Hungary:348#Israel:376#Romania:642#Slovakia:703#Slovenia:705#Ukraine:804#US of America:840"},{"languagename":"Iban","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Ibanag","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Icelandic","lcount":"3","lcountry":"Canada:124#Iceland:352#US of America:840"},{"languagename":"Ifugao","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Igbo","lcount":"1","lcountry":"Nigeria:566"},{"languagename":"Ijo","lcount":"1","lcountry":"Nigeria:566"},{"languagename":"Ilokano","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Intha","lcount":"1","lcountry":"Myanmar:104"},{"languagename":"Inuktitut","lcount":"3","lcountry":"Canada:124#Greenland:304#US of America:840"},{"languagename":"Inupiat","lcount":"0","lcountry":null},{"languagename":"Italian","lcount":"28","lcountry":"Argentina:032#Australia:036#Belgium:056#Brazil:076#Canada:124#Croatia:191#Egypt:818#Eritrea:F111#France:250#Germany:276#Holy See:336#Israel:376#Italy:380#Libya:434#Liechtenstein:438#Luxembourg:442#Monaco:492#Paraguay:600#Puerto Rico:630#San Marino:674#Saudi Arabia:682#Slovenia:705#Somalia:706#Switzerland:756#Tunisia:788#UK Gr. Britain:826#Uruguay:858#US of America:840"},{"languagename":"Ivatan","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Japanese","lcount":"27","lcountry":"American Samoa:016#Argentina:032#Belize:084#Brazil:076#Canada:124#Dominican Rep.:214#Germany:276#Guam:316#Hong Kong:344#Japan:392#Mexico:484#Micronesia:583#Midway Is.:488#Mongolia:496#New Zealand:554#Palau:585#Panama:591#Paraguay:600#Peru:604#Philippines:608#Ryukyu Is.:392B#Singapore:702#Taiwan\/ChTaipei:156A#Thailand:764#UK Gr. Britain:826#Un. Arab Emir.:784#US of America:840"},{"languagename":"Javanese","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Jawe","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Jola-Fonyi","lcount":"1","lcountry":"Senegal:686"},{"languagename":"Jukun Takum","lcount":"0","lcountry":null},{"languagename":"Jula","lcount":"3","lcountry":"Burkina Faso:854#Ivory coast:384#Mali:466"},{"languagename":"Kaba","lcount":"1","lcountry":"Chad:148"},{"languagename":"Kabalai","lcount":"1","lcountry":"Chad:148"},{"languagename":"Kagayanen","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Kamba","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Kanembu","lcount":"2","lcountry":"Chad:148#Niger:562"},{"languagename":"Kannada","lcount":"1","lcountry":"India:356"},{"languagename":"Kanuri","lcount":"2","lcountry":"Niger:562#Nigeria:566"},{"languagename":"Kapampangan","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Karang","lcount":"2","lcountry":"Cameroon:120#Chad:148"},{"languagename":"Kashmiri","lcount":"3","lcountry":"India:356#Pakistan:586#UK Gr. Britain:826"},{"languagename":"Kazakh","lcount":"13","lcountry":"Afghanistan:004#China:156#Germany:276#Iran:364#Kazakhstan:398#Kyrgyzstan:417#Mongolia:496#Russia:643#Tajikistan:762#T\u00fcrkiye:792#Turkmenistan:795#Ukraine:804#Uzbekistan:860"},{"languagename":"Kele","lcount":"1","lcountry":"Congo (DR;Kin.):180"},{"languagename":"Kenyi","lcount":"1","lcountry":"Uganda:800"},{"languagename":"Kera","lcount":"2","lcountry":"Cameroon:120#Chad:148"},{"languagename":"Khasi","lcount":"2","lcountry":"Bangladesh:050#India:356"},{"languagename":"Khmer","lcount":"7","lcountry":"Cambodia:116#China:156#France:250#Laos:418#Thailand:764#US of America:840#Viet Nam:704"},{"languagename":"Kibet","lcount":"0","lcountry":null},{"languagename":"Kim","lcount":"1","lcountry":"Chad:148"},{"languagename":"Kirghiz","lcount":"4","lcountry":"Afghanistan:004#China:156#Kyrgyzstan:417#T\u00fcrkiye:792"},{"languagename":"Kiribati","lcount":"6","lcountry":"Fiji:242#Kiribati:296#Nauru:520#Solomon Is.:090#Tuvalu:798#Vanuatu:548"},{"languagename":"Kombe","lcount":"0","lcountry":null},{"languagename":"Konkani","lcount":"2","lcountry":"India:356#Kenya:404"},{"languagename":"Konzo","lcount":"1","lcountry":"Uganda:800"},{"languagename":"Korean","lcount":"28","lcountry":"American Samoa:016#Bahrain:048#Brunei Daruss.:096#Canada:124#China:156#Germany:276#Guam:316#Hawaii:840B#Japan:392#Kazakhstan:398#Korea (North):408#Korea (South):410#Kyrgyzstan:417#Mauritania:478#Midway Is.:488#Mongolia:496#North. Marianas:580#Panama:591#Paraguay:600#Philippines:608#Russia:643#Saudi Arabia:682#Singapore:702#Tajikistan:762#Thailand:764#Turkmenistan:795#US of America:840#Uzbekistan:860"},{"languagename":"Kosraean","lcount":"1","lcountry":"Micronesia:583"},{"languagename":"Kotoko","lcount":"3","lcountry":"Cameroon:120#Chad:148#Nigeria:566"},{"languagename":"Krio","lcount":"5","lcountry":"Equator. Guinea:226#Gambia:270#Guinea:324#Senegal:686#Sierra Leone:694"},{"languagename":"Kru","lcount":"2","lcountry":"Ivory coast:384#Liberia:430"},{"languagename":"Kumak","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Kuyunon","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Lango","lcount":"1","lcountry":"Uganda:800"},{"languagename":"Languedocien","lcount":"1","lcountry":"France:250"},{"languagename":"Laotian","lcount":"2","lcountry":"Laos:418#US of America:840"},{"languagename":"Laru","lcount":"0","lcountry":null},{"languagename":"Latvian","lcount":"15","lcountry":"Australia:036#Belarus:112#Brazil:076#Canada:124#Estonia:233#Germany:276#Latvia:428#Lithuania:440#New Zealand:554#Russia:643#Sweden:752#UK Gr. Britain:826#Ukraine:804#US of America:840#Venezuela:862"},{"languagename":"Lau","lcount":"1","lcountry":"Solomon Is.:090"},{"languagename":"Ligurian","lcount":"2","lcountry":"France:250#Monaco:492"},{"languagename":"Likwala","lcount":"0","lcountry":null},{"languagename":"Lillooet","lcount":"1","lcountry":"Canada:124"},{"languagename":"Limba, west-central","lcount":"1","lcountry":"Sierra Leone:694"},{"languagename":"Lingala","lcount":"2","lcountry":"Congo (Brazza.):178#Congo (DR;Kin.):180"},{"languagename":"Lithuanian","lcount":"17","lcountry":"Argentina:032#Belarus:112#Brazil:076#Canada:124#Estonia:233#Kazakhstan:398#Kyrgyzstan:417#Latvia:428#Lithuania:440#Poland:616#Russia:643#Tajikistan:762#Turkmenistan:795#UK Gr. Britain:826#Uruguay:858#US of America:840#Uzbekistan:860"},{"languagename":"Lombo","lcount":"0","lcountry":null},{"languagename":"Lopa","lcount":"0","lcountry":null},{"languagename":"Lozi","lcount":"3","lcountry":"Botswana:072#Namibia:516#Zimbabwe:716"},{"languagename":"Luba-Kasai","lcount":"1","lcountry":"Congo (DR;Kin.):180"},{"languagename":"Luo","lcount":"2","lcountry":"Kenya:404#Tanzania:834"},{"languagename":"Luyia","lcount":"0","lcountry":null},{"languagename":"Lwena","lcount":"2","lcountry":"Angola:024#Zambia:894"},{"languagename":"Macedonian","lcount":"4","lcountry":"Albania:008#Canada:124#Greece:300#North Macedonia:807"},{"languagename":"Magindanaon","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Makassarese","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Malagasy","lcount":"4","lcountry":"Comoros:174#Madagascar:450#Mayotte:175#Reunion [La]:638"},{"languagename":"Malagasy, Betsimisaraka","lcount":"0","lcountry":null},{"languagename":"Malagasy, Merina","lcount":"0","lcountry":null},{"languagename":"Malagasy, Sakalava","lcount":"0","lcountry":null},{"languagename":"Malagasy, Tanosy","lcount":"0","lcountry":null},{"languagename":"Malay","lcount":"4","lcountry":"Indonesia:360#Malaysia:458#Myanmar:104#Singapore:702"},{"languagename":"Malayalam","lcount":"5","lcountry":"Fiji:242#India:356#Malaysia:458#Singapore:702#Un. Arab Emir.:784"},{"languagename":"Maldivian","lcount":"2","lcountry":"India:356#Maldives:462"},{"languagename":"Maltese","lcount":"2","lcountry":"Italy:380#Malta:470"},{"languagename":"Mambai","lcount":"2","lcountry":"Cameroon:120#Chad:148"},{"languagename":"Mamuju","lcount":"1","lcountry":"Indonesia:360"},{"languagename":"Mandarin Chinese","lcount":"2","lcountry":"China:156#Taiwan\/ChTaipei:156A"},{"languagename":"Mandinka","lcount":"3","lcountry":"Gambia:270#Guinea-Bissau:624#Senegal:686"},{"languagename":"Mangareva","lcount":"1","lcountry":"Fr. Polynesia:258"},{"languagename":"Manx","lcount":"1","lcountry":"Isle of Man:833"},{"languagename":"Maori","lcount":"1","lcountry":"New Zealand:554"},{"languagename":"Mapun","lcount":"2","lcountry":"Malaysia:458#Philippines:608"},{"languagename":"Maranao\/Samal\/Tao Sug","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Marathi","lcount":"1","lcountry":"India:356"},{"languagename":"Marquesan","lcount":"1","lcountry":"Marquesas Is.:250D"},{"languagename":"Marshallese","lcount":"2","lcountry":"Marshall Is.:584#Nauru:520"},{"languagename":"Masana","lcount":"1","lcountry":"Chad:148"},{"languagename":"Meitei","lcount":"3","lcountry":"Bangladesh:050#India:356#Myanmar:104"},{"languagename":"Mende","lcount":"2","lcountry":"Liberia:430#Sierra Leone:694"},{"languagename":"Meru","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Miltu","lcount":"1","lcountry":"Chad:148"},{"languagename":"Min Nan","lcount":"9","lcountry":"Brunei Daruss.:096#China:156#Hong Kong:344#Indonesia:360#Malaysia:458#Philippines:608#Singapore:702#Taiwan\/ChTaipei:156A#Thailand:764"},{"languagename":"Misima-Paneati","lcount":"1","lcountry":"Papua New Guin.:598"},{"languagename":"Miskito","lcount":"1","lcountry":"Nicaragua:558"},{"languagename":"Montenegrin","lcount":"1","lcountry":"Montenegro:499"},{"languagename":"M\u00f2or\u00e9","lcount":"3","lcountry":"Burkina Faso:854#Mali:466#Togo:768"},{"languagename":"Motu","lcount":"1","lcountry":"Papua New Guin.:598"},{"languagename":"Mundang","lcount":"1","lcountry":"Chad:148"},{"languagename":"Musgu","lcount":"1","lcountry":"Cameroon:120"},{"languagename":"Nass-Gitksan","lcount":"0","lcountry":null},{"languagename":"Nemi","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Nepali","lcount":"4","lcountry":"Bhutan:064#India:356#Nauru:520#Nepal:524"},{"languagename":"Ngarinyin","lcount":"1","lcountry":"Australia:036"},{"languagename":"Ngombe","lcount":"0","lcountry":null},{"languagename":"Niellim","lcount":"1","lcountry":"Chad:148"},{"languagename":"Niuean","lcount":"4","lcountry":"Cook Is.:184#New Zealand:554#Niue:570#Tonga:776"},{"languagename":"Nkomi","lcount":"1","lcountry":"Gabon:266"},{"languagename":"Norwegian","lcount":"2","lcountry":"Norway:578#Svalbard Mayen:744"},{"languagename":"Not specified","lcount":"0","lcountry":null},{"languagename":"Nubian","lcount":"0","lcountry":null},{"languagename":"Nuer","lcount":"2","lcountry":"Ethiopia:230#Sudan (North):736"},{"languagename":"Numee","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Nupe","lcount":"1","lcountry":"Nigeria:566"},{"languagename":"Nuuchahnulth","lcount":"0","lcountry":null},{"languagename":"Nyanja","lcount":"5","lcountry":"Malawi:454#Mozambique:508#Tanzania:834#Zambia:894#Zimbabwe:716"},{"languagename":"Nyankore","lcount":"1","lcountry":"Uganda:800"},{"languagename":"Nyikina","lcount":"1","lcountry":"Australia:036"},{"languagename":"Nyoro","lcount":"0","lcountry":null},{"languagename":"Nzema","lcount":"2","lcountry":"Ghana:288#Ivory coast:384"},{"languagename":"Okanagan","lcount":"1","lcountry":"US of America:840"},{"languagename":"Ona","lcount":"1","lcountry":"Argentina:032"},{"languagename":"Oriya","lcount":"2","lcountry":"Bangladesh:050#India:356"},{"languagename":"Oromo","lcount":"4","lcountry":"Egypt:818#Ethiopia:230#Kenya:404#Somalia:706"},{"languagename":"Other","lcount":"22","lcountry":"Armenia:051#Azerbaijan:031#Belarus:112#Eritrea:F111#Estonia:233#Georgia:268#Kazakhstan:398#Kenya:404#Kiribati:296#Kyrgyzstan:417#Lesotho:426#Malaysia:458#Malta:470#Moldova:498#Mongolia:496#Nepal:524#Tajikistan:762#Tokelau:772#Tonga:776#Tuvalu:798#Uzbekistan:860#Wallis Futuna:876"},{"languagename":"Oyampi","lcount":"2","lcountry":"Brazil:076#French Guiana:254"},{"languagename":"Palauan","lcount":"1","lcountry":"Palau:585"},{"languagename":"Palicur","lcount":"2","lcountry":"Brazil:076#French Guiana:254"},{"languagename":"Palo","lcount":"0","lcountry":null},{"languagename":"Pangasinan","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Papiamentu","lcount":"4","lcountry":"Neth Antilles:532#Netherlands:528#Puerto Rico:630#Virgin Is. (US):850"},{"languagename":"Persian","lcount":"1","lcountry":"Iran:364"},{"languagename":"Pije","lcount":"1","lcountry":"New Caledonia:540"},{"languagename":"Pila","lcount":"1","lcountry":"Benin:204"},{"languagename":"Pitcairnese","lcount":"1","lcountry":"Pitcairn:612"},{"languagename":"Pokomo","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Polish","lcount":"1","lcountry":"Poland:616"},{"languagename":"Portuguese","lcount":"11","lcountry":"Angola:024#Azores Is.:620B#Brazil:076#Cape Verde:132#Guinea-Bissau:624#Macau \/ Macao:446#Madeira Is.:620A#Mozambique:508#Portugal:620#Sao Tome Princ.:678#Timor-Leste:626"},{"languagename":"Prussian, Old","lcount":"3","lcountry":"Germany:276#Poland:616#Russia:643"},{"languagename":"Punjabi","lcount":"5","lcountry":"Bangladesh:050#Fiji:242#India:356#Kenya:404#Malaysia:458"},{"languagename":"Quechua","lcount":"4","lcountry":"Bolivia:068#Colombia:170#Ecuador:218#Peru:604"},{"languagename":"Rapa","lcount":"1","lcountry":"Fr. Polynesia:258"},{"languagename":"Rapa Nui","lcount":"1","lcountry":"Easter I.:152A"},{"languagename":"Reshe","lcount":"0","lcountry":null},{"languagename":"Romblomanon","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Roviana","lcount":"0","lcountry":null},{"languagename":"Rumanian","lcount":"1","lcountry":"Romania:642"},{"languagename":"Rundi","lcount":"1","lcountry":"Burundi:108"},{"languagename":"Russian","lcount":"3","lcountry":"Kuril Is.:810B#Russia:643#Turkmenistan:795"},{"languagename":"Rwanda","lcount":"4","lcountry":"Congo (DR;Kin.):180#Rwanda:646#Tanzania:834#Uganda:800"},{"languagename":"Saami, North","lcount":"0","lcountry":null},{"languagename":"Sahaptin","lcount":"1","lcountry":"US of America:840"},{"languagename":"Salish","lcount":"0","lcountry":null},{"languagename":"Samburu","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Samo, Southern","lcount":"0","lcountry":null},{"languagename":"Samoan","lcount":"6","lcountry":"American Samoa:016#Fiji:242#Hawaii:840B#New Zealand:554#Samoa:882#US of America:840"},{"languagename":"Saramaccan","lcount":"2","lcountry":"French Guiana:254#Suriname:740"},{"languagename":"Sarua","lcount":"0","lcountry":null},{"languagename":"Sena","lcount":"1","lcountry":"Mozambique:508"},{"languagename":"Seraiki","lcount":"3","lcountry":"India:356#Pakistan:586#UK Gr. Britain:826"},{"languagename":"Serbian","lcount":"2","lcountry":"Bosnia Herzego.:070#Croatia:191"},{"languagename":"Serer-Sine","lcount":"1","lcountry":"Senegal:686"},{"languagename":"Shilluk","lcount":"1","lcountry":"Sudan (North):736"},{"languagename":"Shuswap","lcount":"0","lcountry":null},{"languagename":"Sicilian","lcount":"1","lcountry":"Italy:380"},{"languagename":"Sindhi","lcount":"2","lcountry":"India:356#Pakistan:586"},{"languagename":"Sinhalese","lcount":"1","lcountry":"Sri Lanka:144"},{"languagename":"Slovak","lcount":"1","lcountry":"Slovakia:703"},{"languagename":"Slovene","lcount":"4","lcountry":"Austria:040#Hungary:348#Italy:380#Slovenia:705"},{"languagename":"So","lcount":"0","lcountry":null},{"languagename":"Somali","lcount":"1","lcountry":"Somalia:706"},{"languagename":"Songhay, Koyra Chiini","lcount":"1","lcountry":"Burkina Faso:854"},{"languagename":"Sonink\u00e9","lcount":"7","lcountry":"Burkina Faso:854#Gambia:270#Guinea-Bissau:624#Ivory coast:384#Mali:466#Mauritania:478#Senegal:686"},{"languagename":"Spanish","lcount":"26","lcountry":"Argentina:032#Bolivia:068#Canary Is.:724A#Chile:152#Cocos I. (CR):I188#Colombia:170#Costa Rica:188#Cuba:192#Dominican Rep.:214#Easter I.:152A#Ecuador:218#Equator. Guinea:226#Galapagos Is.:218A#Guatemala:320#Honduras:340#Mexico:484#Nicaragua:558#Panama:591#Paraguay:600#Peru:604#Puerto Rico:630#Revillagig. Ar.:I484#Salvador [El]:222#Spain:724#Uruguay:858#Venezuela:862"},{"languagename":"Sranan Tongo","lcount":"2","lcountry":"Indonesia:360#Suriname:740"},{"languagename":"Surigaonon","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Susu","lcount":"3","lcountry":"Guinea:324#Guinea-Bissau:624#Sierra Leone:694"},{"languagename":"Swahili","lcount":"7","lcountry":"Kenya:404#Mayotte:175#Oman:512#Somalia:706#South Africa:710#Tanzania:834#Un. Arab Emir.:784"},{"languagename":"Swedish","lcount":"1","lcountry":"Sweden:752"},{"languagename":"Tagalog","lcount":"3","lcountry":"Canada:124#Philippines:608#US of America:840"},{"languagename":"Tagbanwa Calamian","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Tahitian","lcount":"4","lcountry":"Fr. Polynesia:258#New Caledonia:540#New Zealand:554#Society Is.:250A"},{"languagename":"Tamahaq, Tahaggart","lcount":"1","lcountry":"Algeria:012"},{"languagename":"Tamil","lcount":"9","lcountry":"Fiji:242#Germany:276#India:356#Malaysia:458#Mauritius:480#Netherlands:528#Singapore:702#South Africa:710#Sri Lanka:144"},{"languagename":"Telugu","lcount":"4","lcountry":"Fiji:242#India:356#Malaysia:458#Singapore:702"},{"languagename":"Thai","lcount":"1","lcountry":"Thailand:764"},{"languagename":"Themne","lcount":"1","lcountry":"Sierra Leone:694"},{"languagename":"Tobian","lcount":"1","lcountry":"Palau:585"},{"languagename":"Tokelauan","lcount":"2","lcountry":"New Zealand:554#Tokelau:772"},{"languagename":"Tonga","lcount":"1","lcountry":"Malawi:454"},{"languagename":"Tongan","lcount":"1","lcountry":"Tonga:776"},{"languagename":"Tsimshian","lcount":"0","lcountry":null},{"languagename":"Tuamotuan","lcount":"3","lcountry":"Fr. Polynesia:258#Society Is.:250A#Tuamotu Is.:250C"},{"languagename":"Tucano","lcount":"0","lcountry":null},{"languagename":"Tumbuka","lcount":"3","lcountry":"Malawi:454#Tanzania:834#Zambia:894"},{"languagename":"Tunya","lcount":"1","lcountry":"Chad:148"},{"languagename":"Tupi","lcount":"0","lcountry":null},{"languagename":"Tupuri","lcount":"1","lcountry":"Cameroon:120"},{"languagename":"Turkana","lcount":"1","lcountry":"Kenya:404"},{"languagename":"Turkish","lcount":"23","lcountry":"Austria:040#Azerbaijan:031#Belgium:056#Bulgaria:100#Canada:124#Cyprus:196#Denmark:208#Finland:246#France:250#Georgia:268#Germany:276#Greece:300#Iran:364#Iraq:368#Netherlands:528#North Macedonia:807#Romania:642#Sweden:752#Switzerland:756#T\u00fcrkiye:792#UK Gr. Britain:826#US of America:840#Uzbekistan:860"},{"languagename":"Tuvaluan","lcount":"4","lcountry":"Fiji:242#Nauru:520#New Zealand:554#Tuvalu:798"},{"languagename":"Ukrainian","lcount":"1","lcountry":"Ukraine:804"},{"languagename":"Urdu","lcount":"8","lcountry":"Bahrain:048#Fiji:242#Germany:276#India:356#Oman:512#Pakistan:586#Qatar:634#South Africa:710"},{"languagename":"Venda","lcount":"2","lcountry":"South Africa:710#Zimbabwe:716"},{"languagename":"Vietnamese","lcount":"1","lcountry":"Viet Nam:704"},{"languagename":"Vili","lcount":"1","lcountry":"Congo (DR;Kin.):180"},{"languagename":"Visayan","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Wallisian","lcount":"2","lcountry":"New Caledonia:540#Wallis Futuna:876"},{"languagename":"Walmajarri","lcount":"1","lcountry":"Australia:036"},{"languagename":"Waray-waray","lcount":"1","lcountry":"Philippines:608"},{"languagename":"Wayana","lcount":"3","lcountry":"Brazil:076#French Guiana:254#Suriname:740"},{"languagename":"Wayuu","lcount":"2","lcountry":"Colombia:170#Venezuela:862"},{"languagename":"Welsh","lcount":"1","lcountry":"UK Engld Wal:826A"},{"languagename":"Wolof","lcount":"2","lcountry":"Mauritania:478#Senegal:686"},{"languagename":"Yao","lcount":"3","lcountry":"Malawi:454#Mozambique:508#Tanzania:834"},{"languagename":"Yoruba","lcount":"3","lcountry":"Benin:204#Nigeria:566#Togo:768"},{"languagename":"Zande","lcount":"3","lcountry":"Centr. Af. Rp.:140#Congo (DR;Kin.):180#Sudan (North):736"}];
+
+	populateLanguageDropdown();
+
+	function updateCountries() {
+		const langSelect = document.getElementById('lang-select');
+		const countrySelect = document.getElementById('country-select');
+		const selectedLang = langSelect.value;
+		const selectedData = data.find(item => item.languagename === selectedLang);
+
+		countrySelect.innerHTML = ''; // Clear previous options
+		// display country drop-down list if lcount of current selected language is > 0
+		if (selectedData && selectedData.lcount > 0) {
+			countrySelect.innerHTML = '<option value="">All territories</option>';
+
+			var sel_country = '';
+			const countries = selectedData.lcountry.split('#');
+			countries.forEach(countryPair => {
+				const [country, c_code] = countryPair.split(':');
+				const option = document.createElement('option');
+				option.value = c_code;
+				option.text = country;
+				if (sel_country && sel_country == c_code)
+					option.setAttribute('selected', true);
+				countrySelect.appendChild(option);
+			});
+			countrySelect.style.display = 'inline-block';
+		} else {
+			countrySelect.style.display = 'none';
+		}
+	}
+
+	function populateLanguageDropdown() {
+		const langSelect = document.getElementById('lang-select');
+		langSelect.innerHTML = '<option value="">All languages</option>';
+
+		var language = '';
+		var i = 0;
+		data.forEach(item => {
+			const option = document.createElement('option');
+			option.value = item.languagename;
+			option.text = item.languagename;
+			if (language && language == item.languagename)
+				option.setAttribute('selected', true);
+
+			langSelect.appendChild(option);
+			i++;
+		});
+
+		updateCountries();
+	}
+
+	function submit_search() {
+		var cn_form = document.forms.cn_search_form;
+		var searchText = cn_form.search_text;
+		var selectedLang = cn_form.language;
+		var selectedCount = cn_form.country;
+		var crit1_operator = cn_form.crit1_operator;
+
+		var c_name = "Red Devil";
+		var c_lang = "English";
+		var c_cntr = "";
+		var c_optr = "CONTAINS";
+
+
+		if (searchText.value == "" && selectedLang.value == "" ) {
+			alert("Common name cannot be blank or select a language.");
+			searchText.focus();
+			return false;
+		}
+
+		if (crit1_operator.value != "EQUAL" && searchText.value.length < 3 ) {
+			alert("Please enter at least 3 characters to search.");
+			searchText.focus();
+			return false;
+		}
+
+		if (searchText.value == c_name && selectedLang.value == c_lang && selectedCount.value == c_cntr && crit1_operator.value == c_optr) {
+			return false;
+		}
+
+		cn_form.submit();
+	}
+
+</script>
+<!--- Body ---->
+
+<div class="devlog">
+	cfm script by <a href="/collaborators/CollaboratorSummary.php?id=405">eagbayani</a>, 28.08.01,
+	php script by <a href="/collaborators/CollaboratorSummary.php?id=2016">cmilitante</a>, 04/03/10,
+	last modified by <a href="/collaborators/CollaboratorSummary.php?id=2016">cmilitante</a>, 11/12/12
+</div>
+
+</body>
+</html>
