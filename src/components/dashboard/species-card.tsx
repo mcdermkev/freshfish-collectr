@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Species } from "@/lib/types/database";
-import { generateSpeciesImage } from "@/lib/actions/pixazo";
+import { generateSpeciesImage } from "@/lib/actions/imagen";
 import { cn } from "@/lib/utils";
 
 interface SpeciesCardProps {
@@ -52,7 +52,7 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
         setImgLoading(true);
       } else {
         setImgLoading(true);
-        // Phase 2: Call Pixazo Unified API for Flux Schnell generation
+        // Phase 2: Call Google Vertex AI Imagen 4.0 for photorealistic generation
         const generatedUrl = await generateSpeciesImage(species.common_name);
         if (generatedUrl) {
           setImgUrl(generatedUrl);
