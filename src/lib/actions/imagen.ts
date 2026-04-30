@@ -1,6 +1,6 @@
 "use server";
 
-import { PredictionServiceClient, helpers } from '@google-cloud/aiplatform';
+import { GoogleAuth } from 'google-auth-library';
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -9,33 +9,31 @@ const projectId = process.env.GOOGLE_CLOUD_PROJECT || "getnexusaisolutions";
 const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1"; // Using us-central1 for stable Imagen 4 availability
 const modelId = "imagen-4.0-generate-001";
 
-// Lazy client initialization to ensure env vars are ready and credentials are fresh
-let clientInstance: PredictionServiceClient | null = null;
-
-function getClient() {
-  if (clientInstance) return clientInstance;
-
+// Auth initialization helper
+async function getAuthToken() {
   if (!process.env.GOOGLE_CREDENTIALS_JSON) {
     throw new Error('CRITICAL: GOOGLE_CREDENTIALS_JSON is missing from environment variables');
   }
 
   try {
     const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-    console.log(`[Imagen 4] Initializing client for: ${creds.client_email}`);
-    
-    clientInstance = new PredictionServiceClient({
-      apiEndpoint: `${location}-aiplatform.googleapis.com`,
+    const auth = new GoogleAuth({
       credentials: {
         client_email: creds.client_email,
         private_key: creds.private_key.split(String.raw`\n`).join('\n'),
-        project_id: creds.project_id || projectId,
+        project_id: creds.project_id
       },
-      projectId: projectId,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
     });
+
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
     
-    return clientInstance;
+    if (!token.token) throw new Error("Failed to retrieve access token");
+    
+    return { token: token.token, projectId: creds.project_id };
   } catch (err: any) {
-    console.error("[Imagen 4] Failed to parse credentials:", err.message);
+    console.error("[Imagen REST Auth] Failed to prepare auth:", err.message);
     throw new Error(`Authentication Setup Failed: ${err.message}`);
   }
 }
@@ -77,26 +75,49 @@ export async function generateSpeciesImage(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const client = getClient();
-      const result = await client.predict(request);
-      const response = result[0];
+      const { token, projectId: authProjectId } = await getAuthToken();
       
-      if (!response || !response.predictions || response.predictions.length === 0) {
-        throw new Error("No predictions returned from Imagen 4");
+      // Using the user-specified stable REST endpoint
+      const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${authProjectId}/locations/${location}/publishers/google/models/imagegeneration@006:predict`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: "16:9",
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Vertex AI REST Error (${response.status} ${response.statusText}): ${errorText}`);
       }
 
-      const prediction: any = helpers.fromValue(response.predictions[0] as any);
+      const result = await response.json();
+      
+      if (!result.predictions || result.predictions.length === 0) {
+        throw new Error("No predictions returned from Vertex AI REST");
+      }
+
+      const prediction = result.predictions[0];
       const base64Image = prediction.bytesBase64Encoded;
 
       if (!base64Image) {
-        throw new Error("Image data missing in prediction");
+        throw new Error("Image data missing in REST prediction");
       }
 
       const dataUrl = `data:image/png;base64,${base64Image}`;
-      console.log(`[Imagen 4] Generation successful for ${speciesName}. Returning data URL.`);
+      console.log(`[Imagen REST] Generation successful for ${speciesName}.`);
       return dataUrl;
     } catch (error: any) {
-      const isRateLimit = error.message?.includes("429") || error.code === 8;
+      const isRateLimit = error.message?.includes("429");
       
       if (attempt < retries && isRateLimit) {
         const waitTime = backoff * Math.pow(2, attempt);
