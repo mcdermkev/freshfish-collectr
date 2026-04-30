@@ -290,27 +290,11 @@ export default function SpeciesPage() {
     return fuse.search(search).map(r => r.item);
   }, [species, catF, dietF, swimF, search]);
 
-  // Phase 1: Semantic Interceptor trigger
   useEffect(() => {
-    if (search && filtered.length === 0 && !loading && !isSemanticSearching) {
-      const timer = setTimeout(async () => {
-        setIsSemanticSearching(true);
-        try {
-          const result = await semanticSearchInterceptor(search);
-          if (result && result.results.length > 0) {
-            setSemanticResults(result.results);
-            setSemanticSummary(result.summary);
-          }
-        } finally {
-          setIsSemanticSearching(false);
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (!search || filtered.length > 0) {
-      setSemanticResults([]);
-      setSemanticSummary(null);
+    if (search.length >= 3 && filtered.length === 0 && !loading && !fbLoading && !hasSearchedGlobal) {
+      handleGlobalSearch();
     }
-  }, [search, filtered.length, loading]);
+  }, [search, filtered.length, loading, fbLoading, hasSearchedGlobal]);
 
   const counts = useMemo(() => ({
     all: species.length,

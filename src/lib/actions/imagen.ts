@@ -136,8 +136,13 @@ async function processSpeciesSync(species: any[]) {
 
       if (updateError) throw updateError;
       successCount++;
-    } catch (err) {
-      console.error(`[Maintenance] Failed to refresh ${s.common_name}:`, err);
+    } catch (err: any) {
+      console.error(`[Sync Failure] ERROR for ${s.common_name}:`, {
+        message: err.message,
+        code: err.code,
+        stack: err.stack,
+        speciesId: s.id
+      });
       failCount++;
     }
   }

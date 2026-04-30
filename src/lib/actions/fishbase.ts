@@ -58,7 +58,12 @@ export async function importSpecies(species: any) {
   // Ignore stock photos from original species data to ensure unique generation
   let finalImageUrl = (species.image_url?.includes("unsplash.com")) ? null : species.image_url;
   try {
-    // We trigger this immediately as part of the import flow
+    // [DEBUG] Exact Prompt Logging for Import
+    const promptToLog = species.scientific_name 
+      ? `Ultra-high definition macro photography of a ${commonName} (${species.scientific_name}) in a natural freshwater aquarium, professional lighting, 8k.`
+      : `Photorealistic macro photography of ${commonName} fish, aquarium lighting, 8k resolution.`;
+    console.log(`>>> [Import Gen Request] Prompt: "${promptToLog}"`);
+
     const dataUrl = await generateSpeciesImage(commonName, species.scientific_name);
     if (dataUrl) {
       const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
