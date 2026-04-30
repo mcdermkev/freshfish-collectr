@@ -47,7 +47,10 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
 
   useEffect(() => {
     async function handleImage() {
-      if (species.image_url) {
+      // Ignore stock photos to force unique AI generation
+      const isStockPhoto = species.image_url?.includes("unsplash.com");
+      
+      if (species.image_url && !isStockPhoto) {
         setImgUrl(species.image_url);
         setUsePlaceholder(false);
         setImgLoading(true);

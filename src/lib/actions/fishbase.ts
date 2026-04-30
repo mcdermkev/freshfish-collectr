@@ -55,7 +55,8 @@ export async function importSpecies(species: any) {
   }
 
   // 3. Instant HD Image Generation (Imagen 4.0)
-  let finalImageUrl = species.image_url;
+  // Ignore stock photos from original species data to ensure unique generation
+  let finalImageUrl = (species.image_url?.includes("unsplash.com")) ? null : species.image_url;
   try {
     // We trigger this immediately as part of the import flow
     const dataUrl = await generateSpeciesImage(commonName, species.scientific_name);

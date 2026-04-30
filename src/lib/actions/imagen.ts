@@ -31,8 +31,7 @@ export async function generateSpeciesImage(
     ? `Ultra-high definition macro photography of a ${speciesName} (${scientificName}) in a natural freshwater aquarium, professional lighting, 8k.`
     : `Photorealistic macro photography of ${speciesName} fish, aquarium lighting, 8k resolution.`;
 
-  console.log(`[Imagen 4] Generating image for: ${speciesName} (${scientificName || "No Scientific Name"})`);
-  console.log(`[Imagen 4] Prompt: ${prompt}`);
+  console.log(`>>> [Imagen 4 Request] Prompt: "${prompt}"`);
 
   const instance = helpers.toValue({
     prompt: prompt,
