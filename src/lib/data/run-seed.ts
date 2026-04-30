@@ -8,7 +8,7 @@ async function runBatchSeed() {
   const batch = MASTER_SPECIES_LIST.slice(0, 50).map(species => {
     // If it's a stock photo, clear it to force AI generation
     if (species.image_url?.includes("unsplash.com")) {
-      species.image_url = null;
+      species.image_url = undefined;
     }
     return species;
   });
