@@ -5,44 +5,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 // Standard Google Cloud Project configuration
-const projectId = process.env.GOOGLE_CLOUD_PROJECT || "getnexusaisolutions";
-const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1"; // Using us-central1 for stable Imagen 4 availability
-const modelId = "imagen-4.0-generate-001";
-
-// Auth initialization helper
-async function getAuthToken() {
-  if (!process.env.GOOGLE_CREDENTIALS_JSON) {
-    throw new Error('CRITICAL: GOOGLE_CREDENTIALS_JSON is missing from environment variables');
-  }
-
-  try {
-    const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-    const auth = new GoogleAuth({
-      credentials: {
-        client_email: creds.client_email,
-        private_key: creds.private_key.split(String.raw`\n`).join('\n'),
-        project_id: creds.project_id
-      },
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
-
-    const client = await auth.getClient();
-    const token = await client.getAccessToken();
-    
-    if (!token.token) throw new Error("Failed to retrieve access token");
-    
-    return { token: token.token, projectId: creds.project_id };
-  } catch (err: any) {
-    console.error("[Imagen REST Auth] Failed to prepare auth:", err.message);
-    throw new Error(`Authentication Setup Failed: ${err.message}`);
-  }
-}
+const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1"; 
 
 // Helper for delays
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Generates an image with exponential backoff retry logic
+ * Generates an image with exponential backoff retry logic using Vertex AI REST API
  */
 export async function generateSpeciesImage(
   speciesName: string, 
@@ -50,7 +19,9 @@ export async function generateSpeciesImage(
   retries = 3,
   backoff = 1000
 ) {
-  const endpoint = `projects/${projectId}/locations/${location}/publishers/google/models/${modelId}`;
+  if (!process.env.GOOGLE_CREDENTIALS_JSON) {
+    throw new Error('CRITICAL: GOOGLE_CREDENTIALS_JSON is missing');
+  }
 
   const prompt = scientificName 
     ? `Ultra-high definition macro photography of a ${speciesName} (${scientificName}) in a natural freshwater aquarium, professional lighting, 8k.`
@@ -58,55 +29,52 @@ export async function generateSpeciesImage(
 
   console.log(`>>> [Imagen 4 Request] Prompt: "${prompt}"`);
 
-  const instance = helpers.toValue({
-    prompt: prompt,
-  });
-  
-  const parameter = helpers.toValue({
-    sampleCount: 1,
-    aspectRatio: "16:9",
-  });
-
-  const request: any = {
-    endpoint,
-    instances: [instance],
-    parameters: parameter,
-  };
-
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const { token, projectId: authProjectId } = await getAuthToken();
-      
-      // Using the user-specified stable REST endpoint
-      const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${authProjectId}/locations/${location}/publishers/google/models/imagegeneration@006:predict`;
+      const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+      const auth = new GoogleAuth({
+        credentials: {
+          client_email: creds.client_email,
+          private_key: creds.private_key.split(String.raw`\n`).join('\n'),
+          project_id: creds.project_id
+        },
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
 
-      const response = await fetch(url, {
+      const client = await auth.getClient();
+      const token = await client.getAccessToken();
+
+      if (!token.token) throw new Error("Failed to retrieve access token");
+
+      const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${creds.project_id}/locations/${location}/publishers/google/models/imagegeneration@006:predict`;
+
+      const fetchResponse = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          instances: [{ prompt }],
-          parameters: {
+          instances: [{ prompt: prompt }],
+          parameters: { 
             sampleCount: 1,
-            aspectRatio: "16:9",
+            aspectRatio: "16:9" 
           }
         })
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Vertex AI REST Error (${response.status} ${response.statusText}): ${errorText}`);
+      if (!fetchResponse.ok) {
+        const errBody = await fetchResponse.text();
+        throw new Error(`Vertex AI REST Error: ${fetchResponse.status} - ${errBody}`);
       }
 
-      const result = await response.json();
+      const resultData = await fetchResponse.json();
       
-      if (!result.predictions || result.predictions.length === 0) {
+      if (!resultData.predictions || resultData.predictions.length === 0) {
         throw new Error("No predictions returned from Vertex AI REST");
       }
 
-      const prediction = result.predictions[0];
+      const prediction = resultData.predictions[0];
       const base64Image = prediction.bytesBase64Encoded;
 
       if (!base64Image) {
@@ -121,16 +89,16 @@ export async function generateSpeciesImage(
       
       if (attempt < retries && isRateLimit) {
         const waitTime = backoff * Math.pow(2, attempt);
-        console.warn(`[Imagen 4] Rate limited. Retrying in ${waitTime}ms... (Attempt ${attempt + 1}/${retries})`);
+        console.warn(`[Imagen REST] Rate limited. Retrying in ${waitTime}ms... (Attempt ${attempt + 1}/${retries})`);
         await sleep(waitTime);
         continue;
       }
       
-      console.error(`[Imagen 4 Error] Final failure after ${attempt} retries:`, error.message);
+      console.error(`[Imagen REST Error] Final failure after ${attempt} retries:`, error.message);
       
       // Special check: If it failed and we have a common name that might be sensitive, try scientific only
       if (scientificName && speciesName.toLowerCase().includes("devil")) {
-         console.warn(`[Imagen 4] Potential safety filter on "${speciesName}". Retrying with Scientific Name only...`);
+         console.warn(`[Imagen REST] Potential safety filter on "${speciesName}". Retrying with Scientific Name only...`);
          return generateSpeciesImage(scientificName, undefined, 1, 500);
       }
 
