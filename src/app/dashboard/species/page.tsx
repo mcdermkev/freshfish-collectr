@@ -207,7 +207,7 @@ export default function SpeciesPage() {
     if (importingIds.has(fish.spec_code)) return;
 
     setImportingIds(prev => new Set(prev).add(fish.spec_code));
-    try {
+    
     const promise = importSpecies(fish);
     
     toast.promise(promise, {
