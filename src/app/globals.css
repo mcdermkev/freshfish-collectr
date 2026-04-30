@@ -70,6 +70,12 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-success: #22c55e;
+  
+  /* Liquid Glass Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: 12px;
+  --glow-color: rgba(59, 130, 246, 0.5);
 }
 
 /* ===== LIGHT MODE (aquarium-inspired) ===== */
@@ -193,13 +199,39 @@
   animation: gentle-wave 3s ease-in-out infinite;
 }
 
-.glass-card {
-  backdrop-filter: blur(12px);
-  background: oklch(1 0 0 / 8%);
-  border: 1px solid oklch(1 0 0 / 12%);
+.liquid-glass {
+  @apply backdrop-blur-md border border-white/20;
+  background: var(--glass-bg);
 }
 
-.dark .glass-card {
-  background: oklch(1 0 0 / 5%);
-  border: 1px solid oklch(1 0 0 / 8%);
+.dark .liquid-glass {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hover-glow {
+  @apply transition-all duration-300;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px var(--glow-color);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.scale-3d {
+  @apply transition-transform duration-300;
+  transform-style: preserve-3d;
+}
+
+.scale-3d:hover {
+  transform: scale(1.05) translateZ(20px);
+}
+
+/* Hydration fix for backdrop-blur on mobile */
+@media (max-width: 768px) {
+  .liquid-glass {
+    backdrop-filter: none;
+    background: var(--card);
+  }
 }

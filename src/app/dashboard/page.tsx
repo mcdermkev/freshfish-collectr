@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Tank } from "@/lib/types/database";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { motion } from "framer-motion";
 
 export const dynamic = "force-dynamic";
 
@@ -142,17 +144,24 @@ export default async function DashboardPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex items-center gap-4">
+          <Card key={i} className="liquid-glass hover-glow border-border/50 bg-card/80 backdrop-blur-sm transition-shadow overflow-hidden group">
+            <CardContent className="p-4 flex items-center gap-4 relative">
               <div
-                className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md`}
+                className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}
               >
                 <stat.icon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <div className="flex items-baseline gap-1">
+                  {typeof stat.value === 'number' ? (
+                    <AnimatedCounter value={stat.value} className="text-2xl font-bold" />
+                  ) : (
+                    <span className="text-2xl font-bold">{stat.value}</span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
               </div>
+              <div className={`absolute -right-2 -bottom-2 w-12 h-12 bg-gradient-to-br ${stat.color} opacity-10 blur-xl group-hover:opacity-20 transition-opacity`} />
             </CardContent>
           </Card>
         ))}
@@ -170,7 +179,7 @@ export default async function DashboardPage() {
         </div>
 
         {!tanks || tanks.length === 0 ? (
-          <Card className="border-dashed border-2 border-border/50 bg-card/50">
+          <Card className="liquid-glass border-dashed border-2 border-border/50 bg-card/50">
             <CardContent className="p-8 text-center space-y-4">
               <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-ocean-500/20 to-reef/20 flex items-center justify-center">
                 <Container className="w-8 h-8 text-ocean-500" />
@@ -192,7 +201,7 @@ export default async function DashboardPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tanks.slice(0, 6).map((tank: any) => (
               <Link key={tank.id} href={`/dashboard/tanks/${tank.id}`}>
-                <Card className="border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
+                <Card className="liquid-glass hover-glow scale-3d border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">

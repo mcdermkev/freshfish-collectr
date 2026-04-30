@@ -19,14 +19,20 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Search, Fish, Leaf, Bug, Thermometer, Ruler, Container, Shield, Heart, RefreshCw, ExternalLink, Plus, Database as DbIcon,
+import { 
+  Search, Fish, Leaf, Bug, Thermometer, Ruler, Container, 
+  Shield, Heart, RefreshCw, ExternalLink, Plus, Database as DbIcon,
+  Sparkles, AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import type { Species } from "@/lib/types/database";
 import { searchGlobalFishBase, importSpecies } from "@/lib/actions/fishbase";
+import { SpeciesCard } from "@/components/dashboard/species-card";
+import { semanticSearchInterceptor } from "@/lib/actions/search";
+import Fuse from "fuse.js";
+import { motion, AnimatePresence } from "framer-motion";
 
 const aggrColor = (l: string | null) => {
   if (l === "peaceful") return "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20";
@@ -64,6 +70,12 @@ export default function SpeciesPage() {
   const [globalResults, setGlobalResults] = useState<any[]>([]);
   const [hasSearchedGlobal, setHasSearchedGlobal] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  
+  // Phase 1: Semantic Interceptor states
+  const [isSemanticSearching, setIsSemanticSearching] = useState(false);
+  const [semanticSummary, setSemanticSummary] = useState<string | null>(null);
+  const [semanticResults, setSemanticResults] = useState<Species[]>([]);
+
   const [newSpec, setNewSpec] = useState<Partial<Species>>({
     common_name: "",
     category: "fish",
@@ -225,11 +237,49 @@ export default function SpeciesPage() {
   };
 
 
-  const filtered = useMemo(() => species.filter((s) => {
-    return (catF === "all" || s.category === catF)
-      && (dietF === "all" || (s.diet && s.diet.toLowerCase().includes(dietF.toLowerCase())))
-      && (swimF === "all" || (s.swim_zone && s.swim_zone.toLowerCase().includes(swimF.toLowerCase())));
-  }), [species, catF, dietF, swimF]);
+  // Phase 1: Fuzzy Search with fuse.js
+  const filtered = useMemo(() => {
+    let base = species.filter((s) => {
+      return (catF === "all" || s.category === catF)
+        && (dietF === "all" || (s.diet && s.diet.toLowerCase().includes(dietF.toLowerCase())))
+        && (swimF === "all" || (s.swim_zone && s.swim_zone.toLowerCase().includes(swimF.toLowerCase())));
+    });
+
+    if (!search) return base;
+
+    const fuse = new Fuse(base, {
+      keys: [
+        { name: 'common_name', weight: 0.7 },
+        { name: 'scientific_name', weight: 0.9 }, // Prioritize scientific names as requested
+      ],
+      threshold: 0.3,
+      includeScore: true
+    });
+
+    return fuse.search(search).map(r => r.item);
+  }, [species, catF, dietF, swimF, search]);
+
+  // Phase 1: Semantic Interceptor trigger
+  useEffect(() => {
+    if (search && filtered.length === 0 && !loading && !isSemanticSearching) {
+      const timer = setTimeout(async () => {
+        setIsSemanticSearching(true);
+        try {
+          const result = await semanticSearchInterceptor(search);
+          if (result && result.results.length > 0) {
+            setSemanticResults(result.results);
+            setSemanticSummary(result.summary);
+          }
+        } finally {
+          setIsSemanticSearching(false);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (!search || filtered.length > 0) {
+      setSemanticResults([]);
+      setSemanticSummary(null);
+    }
+  }, [search, filtered.length, loading]);
 
   const counts = useMemo(() => ({
     all: species.length,
@@ -297,112 +347,121 @@ export default function SpeciesPage() {
       </div>
 
       {loading ? (
-        <Card className="border-border/50"><CardContent className="p-4 space-y-3">{[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</CardContent></Card>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Card key={i} className="liquid-glass border-border/50 h-[300px]">
+              <Skeleton className="w-full h-40" />
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex gap-2 pt-2">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
-        <Card className="border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[200px]">Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Scientific Name</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead className="hidden sm:table-cell">Temp</TableHead>
-                  <TableHead className="hidden lg:table-cell">pH</TableHead>
-                  <TableHead>Aggression</TableHead>
-                  <TableHead className="hidden sm:table-cell">Difficulty</TableHead>
-                  <TableHead className="hidden lg:table-cell">Min Tank</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-12">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                          <Search className="w-6 h-6 text-muted-foreground" />
+        <div className="space-y-8">
+          <AnimatePresence mode="popLayout">
+            {filtered.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="py-12"
+              >
+                <Card className="liquid-glass border-border/50 bg-card/80 backdrop-blur-md overflow-hidden max-w-2xl mx-auto">
+                  <CardContent className="p-12 text-center">
+                    <div className="flex flex-col items-center gap-6">
+                      {isSemanticSearching ? (
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full border-4 border-ocean-500/20 border-t-ocean-500 animate-spin" />
+                          <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-ocean-500 animate-pulse" />
                         </div>
-                        <div className="space-y-1">
-                          <p className="font-medium">No species found for "{search}"</p>
-                          <p className="text-sm text-muted-foreground">Not finding what you're looking for?</p>
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center">
+                          <Search className="w-8 h-8 text-muted-foreground" />
                         </div>
-                        {isAdmin && (
-                          <div className="flex flex-col gap-2">
+                      )}
+                      
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold">
+                          {isSemanticSearching ? "Consulting AI Interceptor..." : `No results for "${search}"`}
+                        </h3>
+                        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                          {isSemanticSearching 
+                            ? "Our LLM agent is analyzing your query to find semantically similar species..."
+                            : "We couldn't find an exact match in our local database."}
+                        </p>
+                      </div>
+
+                      {!isSemanticSearching && (
+                        <div className="flex flex-wrap justify-center gap-3">
+                          {isAdmin && (
                             <Button 
-                              className="gap-2 bg-indigo-600 hover:bg-indigo-700" 
+                              className="gap-2 bg-gradient-to-r from-indigo-600 to-ocean-600 hover:shadow-lg hover:shadow-indigo-500/20" 
                               onClick={() => {
                                 setNewSpec({ ...newSpec, common_name: search });
                                 setShowAdd(true);
                               }}
                             >
                               <Plus className="w-4 h-4" />
-                              Add "{search}" Manually
+                              Manual Entry
                             </Button>
-                            <Button 
-                              variant="outline"
-                              className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50" 
-                              onClick={handleGlobalSearch}
-                              disabled={fbLoading}
-                            >
-                              <DbIcon className={`w-4 h-4 ${fbLoading ? 'animate-spin' : ''}`} />
-                              {fbLoading ? "Searching FishBase..." : "Search Global Encyclopedia"}
-                            </Button>
-                          </div>
-                        )}
+                          )}
+                          <Button 
+                            variant="outline"
+                            className="gap-2 border-indigo-200/50 hover:bg-indigo-50/50" 
+                            onClick={handleGlobalSearch}
+                            disabled={fbLoading}
+                          >
+                            <DbIcon className={`w-4 h-4 ${fbLoading ? 'animate-spin' : ''}`} />
+                            {fbLoading ? "Querying FishBase..." : "Search Global Index"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Phase 1: Semantic Results display */}
+                {semanticResults.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-12 space-y-6"
+                  >
+                    <div className="flex items-center gap-3 p-4 liquid-glass bg-ocean-500/5 border-ocean-500/20 rounded-xl">
+                      <Sparkles className="w-5 h-5 text-ocean-500" />
+                      <div>
+                        <p className="text-sm font-bold text-ocean-900 dark:text-ocean-100">Semantic AI Match</p>
+                        <p className="text-xs text-muted-foreground">{semanticSummary}</p>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.map((s) => (
-                  <TableRow key={s.id} className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setSel(s)}>
-                    <TableCell className="font-medium min-w-[200px]">
-                      <div className="flex items-center gap-3">
-                        {s.image_url ? (
-                          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-border/50 bg-muted">
-                            <img 
-                              src={s.image_url} 
-                              alt={s?.common_name || "Species"} 
-                              className="w-full h-full object-cover" 
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=100&q=fish";
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                            {catIcon(s?.category || "fish")}
-                          </div>
-                        )}
-                        <span className="truncate max-w-[120px]">{s?.common_name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-muted-foreground italic text-sm">{s?.scientific_name}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm">{s?.max_size_cm ? `${s.max_size_cm}cm` : "—"}</TableCell>
-                    <TableCell className="hidden xl:table-cell text-sm">{s?.temp_min_c && s?.temp_max_c ? `${s.temp_min_c}–${s.temp_max_c}°C` : "—"}</TableCell>
-                    <TableCell className="hidden 2xl:table-cell text-sm">{s?.ph_min && s?.ph_max ? `${s.ph_min}–${s.ph_max}` : "—"}</TableCell>
-                    <TableCell className="hidden md:table-cell">{s?.aggression_level && <Badge variant="outline" className={`text-[10px] uppercase py-0 px-1.5 ${aggrColor(s.aggression_level)}`}>{s.aggression_level}</Badge>}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{s?.care_difficulty && <Badge variant="outline" className={`text-[10px] uppercase py-0 px-1.5 ${diffColor(s.care_difficulty)}`}>{s.care_difficulty}</Badge>}</TableCell>
-                    <TableCell className="hidden xl:table-cell text-sm">{s?.min_tank_gallons ? `${s.min_tank_gallons}gal` : "—"}</TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-primary hover:text-primary/80 h-8 px-2 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSel(s);
-                        }}
-                      >
-                        Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {semanticResults.map((s) => (
+                        <SpeciesCard key={s.id} species={s} onClick={setSel} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div 
+                layout
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              >
+                {filtered.map((s) => (
+                  <SpeciesCard key={s.id} species={s} onClick={setSel} />
                 ))}
-              </TableBody>
-            </Table>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="px-4 py-3 text-xs text-muted-foreground border-t border-border/10">
+            Showing {filtered.length} of {species.length} species
           </div>
-          <div className="px-4 py-3 border-t border-border/50 text-xs text-muted-foreground">Showing {filtered.length} of {species.length} species</div>
-        </Card>
+        </div>
       )}
 
       {globalResults.length > 0 && (
