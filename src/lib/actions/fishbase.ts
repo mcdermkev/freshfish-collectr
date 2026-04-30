@@ -58,8 +58,9 @@ export async function importSpecies(species: any) {
   let finalImageUrl = species.image_url;
   try {
     // We trigger this immediately as part of the import flow
-    const base64Data = await generateSpeciesImage(commonName, species.scientific_name);
-    if (base64Data) {
+    const dataUrl = await generateSpeciesImage(commonName, species.scientific_name);
+    if (dataUrl) {
+      const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
       const buffer = Buffer.from(base64Data, "base64");
       const fileName = `import-${Date.now()}-${species.scientific_name.replace(/\s+/g, '-').toLowerCase()}.png`;
 
@@ -70,7 +71,12 @@ export async function importSpecies(species: any) {
       if (!uploadError) {
         const { data: urlData } = supabase.storage.from("species-images").getPublicUrl(fileName);
         finalImageUrl = urlData.publicUrl;
+        console.log(`[Import] Unique AI image generated and uploaded: ${finalImageUrl}`);
+      } else {
+        console.error(`[Import] Storage upload failed: ${uploadError.message}`);
       }
+    } else {
+      console.warn(`[Import] AI image generation returned null for ${commonName}`);
     }
   } catch (err) {
     console.warn("[Import] Instant image generation failed:", err);

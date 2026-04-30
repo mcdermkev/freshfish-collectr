@@ -28,6 +28,11 @@ import { toast } from "sonner";
 import { useCallback, useRef } from "react";
 import { ErrorBoundary } from "@/components/error-boundary";
 import type { Species } from "@/lib/types/database";
+import { 
+  refreshAllSpeciesImages, 
+  generateSpeciesImage,
+  forceSyncImage 
+} from "@/lib/actions/imagen";
 import { searchGlobalFishBase, importSpecies } from "@/lib/actions/fishbase";
 import { SpeciesCard } from "@/components/dashboard/species-card";
 import { semanticSearchInterceptor } from "@/lib/actions/search";
@@ -83,6 +88,7 @@ export default function SpeciesPage() {
     care_difficulty: "easy"
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -176,6 +182,22 @@ export default function SpeciesPage() {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const handleForceSync = async () => {
+    if (!sel?.id) return;
+    setIsSyncing(true);
+    try {
+      const res = await forceSyncImage(sel.id);
+      if (res.url) {
+        setSel({...sel, image_url: res.url});
+        // Also update in the main list
+        setFiltered(prev => prev.map(s => s.id === sel.id ? {...s, image_url: res.url} : s));
+      }
+    } catch (err) {
+      console.error("Force sync failed:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
   const handleSaveEdit = async () => {
     if (!sel) return;
     setIsSaving(true);
@@ -540,7 +562,12 @@ export default function SpeciesPage() {
                     alt={sel?.common_name || "Species"} 
                     className="w-full h-full object-cover" 
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=800&q=fish";
+                      (e.target as HTMLImageElement).classList.add('hidden');
+                      (e.target as HTMLImageElement).parentElement?.classList.add('bg-gradient-to-br', 'from-ocean-900/40', 'to-slate-900/60', 'flex', 'items-center', 'justify-center');
+                      const p = document.createElement('p');
+                      p.className = 'text-[10px] uppercase tracking-widest text-white/40 font-mono text-center px-4';
+                      p.innerText = 'AI Rendering Failed - Check Connectivity';
+                      (e.target as HTMLImageElement).parentElement?.appendChild(p);
                     }}
                   />
                 </div>
@@ -602,10 +629,22 @@ export default function SpeciesPage() {
                   </div>
                   {sel?.notes && <div className="p-3 rounded-lg bg-muted/30 border border-border/50"><p className="text-xs leading-relaxed text-muted-foreground">{sel.notes}</p></div>}
                   {isAdmin && (
-                    <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-2 border-dashed" onClick={() => setIsEditing(true)}>
-                      <RefreshCw className="w-3 h-3" />
-                      Refine Missing Info
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-2 border-dashed" onClick={() => setIsEditing(true)}>
+                        <RefreshCw className="w-3 h-3" />
+                        Refine Missing Info
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="w-full h-8 text-[10px] gap-2 bg-ocean-500/10 text-ocean-600 hover:bg-ocean-500/20" 
+                        onClick={handleForceSync}
+                        disabled={isSyncing}
+                      >
+                        <Sparkles className={cn("w-3 h-3", isSyncing && "animate-spin")} />
+                        {isSyncing ? "Syncing HD Media..." : "Force Sync AI Image"}
+                      </Button>
+                    </div>
                   )}
                 </>
               )}

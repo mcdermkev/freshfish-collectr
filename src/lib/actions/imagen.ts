@@ -31,6 +31,9 @@ export async function generateSpeciesImage(
     ? `Ultra-high definition macro photography of a ${speciesName} (${scientificName}) in a natural freshwater aquarium, professional lighting, 8k.`
     : `Photorealistic macro photography of ${speciesName} fish, aquarium lighting, 8k resolution.`;
 
+  console.log(`[Imagen 4] Generating image for: ${speciesName} (${scientificName || "No Scientific Name"})`);
+  console.log(`[Imagen 4] Prompt: ${prompt}`);
+
   const instance = helpers.toValue({
     prompt: prompt,
   });
@@ -62,7 +65,9 @@ export async function generateSpeciesImage(
         throw new Error("Image data missing in prediction");
       }
 
-      return base64Image;
+      const dataUrl = `data:image/png;base64,${base64Image}`;
+      console.log(`[Imagen 4] Generation successful for ${speciesName}. Returning data URL.`);
+      return dataUrl;
     } catch (error: any) {
       const isRateLimit = error.message?.includes("429") || error.code === 8;
       
@@ -74,10 +79,110 @@ export async function generateSpeciesImage(
       }
       
       console.error(`[Imagen 4 Error] Final failure after ${attempt} retries:`, error.message);
+      
+      // Special check: If it failed and we have a common name that might be sensitive, try scientific only
+      if (scientificName && speciesName.toLowerCase().includes("devil")) {
+         console.warn(`[Imagen 4] Potential safety filter on "${speciesName}". Retrying with Scientific Name only...`);
+         return generateSpeciesImage(scientificName, undefined, 1, 500);
+      }
+
       return null;
     }
   }
   return null;
+}
+
+/**
+ * Syncs a specific list of species by name or ID
+ */
+export async function syncSpeciesBatch(ids: string[]) {
+  const supabase = await createServerSupabaseClient();
+  const { data: species, error } = await (supabase.from("species") as any)
+    .select("*")
+    .in("id", ids);
+
+  if (error) throw error;
+  if (!species || species.length === 0) return { message: "No species found for given IDs." };
+
+  console.log(`[Maintenance] Starting targeted sync for ${species.length} species...`);
+  return await processSpeciesSync(species);
+}
+
+async function processSpeciesSync(species: any[]) {
+  const supabase = await createServerSupabaseClient();
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const s of species) {
+    try {
+      if (successCount > 0 || failCount > 0) await sleep(3000); 
+
+      const dataUrl = await generateSpeciesImage(s.common_name, s.scientific_name);
+      if (!dataUrl) throw new Error("Generation failed");
+
+      const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+      const fileName = `sync-${s.id}-${Date.now()}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("species-images")
+        .upload(fileName, buffer, { contentType: "image/png", upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("species-images").getPublicUrl(fileName);
+      const { error: updateError } = await (supabase.from("species") as any)
+        .update({ image_url: urlData.publicUrl })
+        .eq("id", s.id);
+
+      if (updateError) throw updateError;
+      successCount++;
+    } catch (err) {
+      console.error(`[Maintenance] Failed to refresh ${s.common_name}:`, err);
+      failCount++;
+    }
+  }
+
+  revalidatePath("/dashboard/species");
+  return { success: successCount, failed: failCount };
+}
+
+/**
+ * Force syncs a single species image and saves to DB
+ */
+export async function forceSyncImage(id: string) {
+  const supabase = await createServerSupabaseClient();
+  const { data: s, error: fetchError } = await (supabase.from("species") as any)
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !s) throw new Error("Species not found");
+
+  console.log(`[Force Sync] Retrying ${s.common_name}...`);
+  
+  const dataUrl = await generateSpeciesImage(s.common_name, s.scientific_name);
+  if (!dataUrl) throw new Error("AI Generation failed. Check logs for safety filter triggers.");
+
+  const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+  const buffer = Buffer.from(base64Data, "base64");
+  const fileName = `force-${id}-${Date.now()}.png`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("species-images")
+    .upload(fileName, buffer, { contentType: "image/png", upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data: urlData } = supabase.storage.from("species-images").getPublicUrl(fileName);
+  const { error: updateError } = await (supabase.from("species") as any)
+    .update({ image_url: urlData.publicUrl })
+    .eq("id", id);
+
+  if (updateError) throw updateError;
+
+  revalidatePath("/dashboard/species");
+  return { url: urlData.publicUrl };
 }
 
 /**
@@ -88,62 +193,16 @@ export async function refreshAllSpeciesImages() {
   
   const { data: species, error } = await (supabase.from("species") as any)
     .select("*")
-    .or("image_url.is.null,image_url.ilike.%placeholder%");
+    .or("image_url.is.null,image_url.ilike.%placeholder%,image_url.ilike.%unsplash%");
 
   if (error) throw error;
   if (!species || species.length === 0) return { message: "No species found needing image refresh." };
 
   console.log(`[Maintenance] Starting sync for ${species.length} species with 3s interval...`);
-
-  let successCount = 0;
-  let failCount = 0;
-
-  for (const s of species) {
-    try {
-      // 1. Safety delay to avoid hitting rate limits proactively
-      if (successCount > 0 || failCount > 0) {
-        await sleep(3000); 
-      }
-
-      // 2. Generate Image
-      const base64Data = await generateSpeciesImage(s.common_name, s.scientific_name);
-      if (!base64Data) throw new Error("Generation failed after retries");
-
-      // 3. Convert to Buffer
-      const buffer = Buffer.from(base64Data, "base64");
-      const fileName = `${s.id}-${Date.now()}.png`;
-
-      // 4. Upload
-      const { error: uploadError } = await supabase.storage
-        .from("species-images")
-        .upload(fileName, buffer, {
-          contentType: "image/png",
-          upsert: true
-        });
-
-      if (uploadError) throw uploadError;
-
-      // 5. Update DB
-      const { data: urlData } = supabase.storage
-        .from("species-images")
-        .getPublicUrl(fileName);
-
-      const { error: updateError } = await (supabase.from("species") as any)
-        .update({ image_url: urlData.publicUrl })
-        .eq("id", s.id);
-
-      if (updateError) throw updateError;
-
-      successCount++;
-    } catch (err) {
-      console.error(`[Maintenance] Failed to refresh ${s.common_name}:`, err);
-      failCount++;
-    }
-  }
-
-  revalidatePath("/dashboard/species");
+  const stats = await processSpeciesSync(species);
+  
   return { 
     message: `Image sync complete.`,
-    stats: { success: successCount, failed: failCount }
+    stats
   };
 }

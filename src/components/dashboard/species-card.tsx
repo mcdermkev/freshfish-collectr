@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Fish, Leaf, Bug, Thermometer, Container, 
-  Shield, Heart, Info 
+  Shield, Heart, Info, RefreshCw 
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Species } from "@/lib/types/database";
 import { generateSpeciesImage } from "@/lib/actions/imagen";
@@ -51,20 +52,32 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
         setUsePlaceholder(false);
         setImgLoading(true);
       } else {
-        setImgLoading(true);
-        // Phase 2: Call Google Vertex AI Imagen 4.0 for photorealistic generation
-        const generatedUrl = await generateSpeciesImage(species.common_name);
-        if (generatedUrl) {
-          setImgUrl(generatedUrl);
-          setUsePlaceholder(false);
-        } else {
-          setUsePlaceholder(true);
-        }
-        setImgLoading(false);
+        await handleManualRefresh();
       }
     }
     handleImage();
   }, [species.image_url, species.common_name]);
+
+  const handleManualRefresh = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setImgLoading(true);
+    setUsePlaceholder(false);
+    
+    try {
+      const generatedUrl = await generateSpeciesImage(species.common_name, species.scientific_name);
+      if (generatedUrl) {
+        setImgUrl(generatedUrl);
+        setUsePlaceholder(false);
+      } else {
+        setUsePlaceholder(true);
+      }
+    } catch (err) {
+      console.error("Manual refresh failed:", err);
+      setUsePlaceholder(true);
+    } finally {
+      setImgLoading(false);
+    }
+  };
 
   const handleImgError = () => {
     console.warn(`Image failed for ${species.common_name}, falling back to placeholder`);
@@ -134,6 +147,18 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
             <Badge variant="secondary" className="liquid-glass text-[10px] backdrop-blur-md bg-black/40 text-white border-white/10">
               {species.category}
             </Badge>
+          </div>
+
+          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 border border-white/10"
+              onClick={handleManualRefresh}
+              disabled={imgLoading}
+            >
+              <RefreshCw className={cn("w-4 h-4", imgLoading && "animate-spin")} />
+            </Button>
           </div>
         </div>
 
