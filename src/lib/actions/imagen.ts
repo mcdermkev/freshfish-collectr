@@ -1,7 +1,7 @@
 "use server";
 
 import { GoogleAuth } from 'google-auth-library';
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 // Standard Google Cloud Project configuration
@@ -128,7 +128,7 @@ export async function syncSpeciesBatch(ids: string[]) {
 }
 
 async function processSpeciesSync(species: any[]) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   let successCount = 0;
   let failCount = 0;
 
@@ -179,7 +179,7 @@ async function processSpeciesSync(species: any[]) {
  * Force syncs a single species image and saves to DB
  */
 export async function forceSyncImage(id: string) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data: s, error: fetchError } = await (supabase.from("species") as any)
     .select("*")
     .eq("id", id)
@@ -217,7 +217,7 @@ export async function forceSyncImage(id: string) {
  * Iterates through species with a 3-second safety delay between generations
  */
 export async function refreshAllSpeciesImages() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   
   const { data: species, error } = await (supabase.from("species") as any)
     .select("*")

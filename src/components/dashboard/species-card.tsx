@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Species } from "@/lib/types/database";
 import { generateSpeciesImage } from "@/lib/actions/imagen";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface SpeciesCardProps {
   species: Species;
@@ -135,16 +136,18 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
                 <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/paper.png')]" />
               </motion.div>
             ) : (
-              <motion.img
+              <Image
                 key="image"
                 src={imgUrl!}
                 alt={species.common_name}
-                onLoad={() => setImgLoading(false)}
-                onError={handleImgError}
+                fill
                 className={cn(
-                  "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110",
+                  "object-cover transition-transform duration-500 group-hover:scale-110",
                   imgLoading ? "opacity-0" : "opacity-100"
                 )}
+                onLoadingComplete={() => setImgLoading(false)}
+                onError={handleImgError}
+                unoptimized // Since these are external URLs that change frequently
               />
             )}
           </AnimatePresence>

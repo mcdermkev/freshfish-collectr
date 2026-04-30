@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Leaf, Bug, Shield, Heart, RefreshCw, Trash2, Camera, Thermometer } from "lucide-react";
 import { motion } from "framer-motion";
-import type { TankLivestockWithSpecies } from "@/lib/types/database";
+import { TankLivestockWithSpecies } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { useState } from "react";
 
 interface LivestockCardProps {
   item: TankLivestockWithSpecies;
@@ -23,6 +25,7 @@ const aggrColor = (l: string | null) => {
 };
 
 export function LivestockCard({ item, onUpdateStatus, onRemove, onUploadPhoto, uploading }: LivestockCardProps) {
+  const [imgError, setImgError] = useState(false);
   const species = item.species;
   const name = item.nickname || species.common_name;
 
@@ -35,16 +38,22 @@ export function LivestockCard({ item, onUpdateStatus, onRemove, onUploadPhoto, u
     >
       <Card className="liquid-glass overflow-hidden h-full flex flex-col group border-border/40">
         <div className="relative aspect-video overflow-hidden">
-          {species.image_url ? (
-            <img 
+          {species.image_url && !imgError ? (
+            <Image 
               src={species.image_url} 
               alt={name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              onError={() => setImgError(true)}
+              unoptimized
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-ocean-900 to-slate-900 flex flex-col items-center justify-center p-4">
-              <Fish className="w-8 h-8 text-white/20 mb-2" />
-              <p className="text-[10px] text-white/40 uppercase tracking-widest font-mono">Image Sync Pending</p>
+            <div className="w-full h-full bg-gradient-to-br from-ocean-900/40 to-slate-900/60 flex flex-col items-center justify-center p-4 text-center">
+              <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2 shadow-2xl backdrop-blur-sm">
+                <Fish className="w-5 h-5 text-ocean-400" />
+              </div>
+              <p className="text-[9px] text-white/40 uppercase tracking-widest font-mono">Scientific Sketch</p>
+              <p className="text-[10px] text-white/60 italic mt-0.5 px-2 line-clamp-1">{species.scientific_name}</p>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
