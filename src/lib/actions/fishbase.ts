@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
@@ -21,7 +21,7 @@ export async function searchGlobalFishBase(searchTerm: string) {
 }
 
 export async function importSpecies(species: any) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const commonName = species.common_name || `${species.genus} ${species.species_epithet}`;
   
   console.log(`[Import] Starting Full Enrichment for: ${commonName}`);
@@ -39,15 +39,15 @@ export async function importSpecies(species: any) {
   // 2. AI Behavioral Mapping (Gemini 3 Flash)
   // Strict mapping to local tags as requested by the user
   let aiEnrichment: any = {
-    aggression_level: "Unknown Behavior",
-    care_difficulty: "Unknown Difficulty",
+    aggression_level: "peaceful",
+    care_difficulty: "beginner",
     diet: "omnivore",
     notes: ""
   };
 
   try {
     const response = await generateText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.0-flash"),
       system: "You are an aquatic life behavior specialist. Map the species to our specific local tags. Return ONLY a valid JSON object without markdown formatting.",
       prompt: `Analyze ${commonName} (${species.scientific_name}). 
       Map it strictly to these options:
@@ -72,8 +72,8 @@ export async function importSpecies(species: any) {
         ...aiEnrichment,
         ...parsed,
         // Ensure values are strings and not null/undefined
-        aggression_level: parsed.aggression_level || "Unknown Behavior",
-        care_difficulty: parsed.care_difficulty || "Unknown Difficulty",
+        aggression_level: parsed.aggression_level || "peaceful",
+        care_difficulty: parsed.care_difficulty || "beginner",
       };
       console.log(`[Import] Gemini enrichment successful for ${commonName}:`, aiEnrichment);
     }
