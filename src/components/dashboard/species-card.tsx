@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Species } from "@/lib/types/database";
+import { generateSpeciesImage } from "@/lib/actions/pixazo";
 import { cn } from "@/lib/utils";
 
 interface SpeciesCardProps {
@@ -44,15 +45,26 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
   const [usePlaceholder, setUsePlaceholder] = useState(!species.image_url);
 
   useEffect(() => {
-    if (species.image_url) {
-      setImgUrl(species.image_url);
-      setUsePlaceholder(false);
-      setImgLoading(true);
-    } else {
-      setUsePlaceholder(true);
-      setImgLoading(false);
+    async function handleImage() {
+      if (species.image_url) {
+        setImgUrl(species.image_url);
+        setUsePlaceholder(false);
+        setImgLoading(true);
+      } else {
+        setImgLoading(true);
+        // Phase 2: Call Pixazo Unified API for Flux Schnell generation
+        const generatedUrl = await generateSpeciesImage(species.common_name);
+        if (generatedUrl) {
+          setImgUrl(generatedUrl);
+          setUsePlaceholder(false);
+        } else {
+          setUsePlaceholder(true);
+        }
+        setImgLoading(false);
+      }
     }
-  }, [species.image_url]);
+    handleImage();
+  }, [species.image_url, species.common_name]);
 
   const handleImgError = () => {
     console.warn(`Image failed for ${species.common_name}, falling back to placeholder`);
