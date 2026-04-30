@@ -21,7 +21,7 @@ export async function importSpecies(species: any) {
   const supabase = await createServerSupabaseClient();
   const commonName = species.common_name || `${species.genus} ${species.species_epithet}`;
   
-  console.log(`[Import] Processing: ${commonName} (${species.scientific_name})`);
+  console.log(`[Import] Starting Full Enrichment for: ${commonName}`);
   
   // 1. Scraping enrichment (FishBase)
   let scrapedData: any = {};
@@ -33,23 +33,31 @@ export async function importSpecies(species: any) {
     }
   }
 
-  // 2. AI behavioral enrichment (Gemini 3)
-  // We use Gemini to fill in the gaps for aggression, difficulty, and diet which FishBase often lacks
+  // 2. AI Behavioral Mapping (Gemini 3 Flash)
+  // Strict mapping to local tags as requested by the user
   let aiEnrichment: any = {};
   try {
     const { text } = await generateText({
       model: google("gemini-3-flash"),
-      system: "You are an aquatic life behavior specialist. Based on the scientific name and common name, provide accurate behavioral data.",
-      prompt: `Analyze the fish: ${commonName} (${species.scientific_name}). Provide a JSON object with: aggression_level (peaceful, semi-aggressive, aggressive), care_difficulty (easy, intermediate, advanced), and diet (herbivore, omnivore, carnivore). Return ONLY JSON.`,
+      system: "You are an aquatic life behavior specialist. Map the species to our specific local tags.",
+      prompt: `Analyze ${commonName} (${species.scientific_name}). 
+      Map it strictly to these options:
+      - aggression_level: "peaceful", "semi-aggressive", or "aggressive"
+      - care_difficulty: "beginner", "intermediate", or "advanced"
+      - diet: "herbivore", "omnivore", or "carnivore"
+      
+      Provide a brief 1-2 sentence bio for the 'notes' field as well.
+      Return ONLY a JSON object.`,
     });
     aiEnrichment = JSON.parse(text);
   } catch (err) {
     console.warn("[Import] AI behavioral enrichment failed:", err);
   }
 
-  // 3. Image Generation & Storage (Imagen 4.0)
+  // 3. Instant HD Image Generation (Imagen 4.0)
   let finalImageUrl = species.image_url;
   try {
+    // We trigger this immediately as part of the import flow
     const base64Data = await generateSpeciesImage(commonName, species.scientific_name);
     if (base64Data) {
       const buffer = Buffer.from(base64Data, "base64");
@@ -65,7 +73,7 @@ export async function importSpecies(species: any) {
       }
     }
   } catch (err) {
-    console.warn("[Import] Image generation failed:", err);
+    console.warn("[Import] Instant image generation failed:", err);
   }
 
   const finalSpecies = {
@@ -79,7 +87,7 @@ export async function importSpecies(species: any) {
     ph_min: scrapedData.ph_min ?? species.ph_min,
     ph_max: scrapedData.ph_max ?? species.ph_max,
     max_size_cm: scrapedData.max_size_cm ?? species.max_size_cm,
-    notes: scrapedData.notes ?? species.notes,
+    notes: aiEnrichment.notes || scrapedData.notes || species.notes,
   };
 
   const { data, error } = await (supabase.from('species') as any)

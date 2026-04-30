@@ -211,19 +211,12 @@ export default function SpeciesPage() {
     const promise = importSpecies(fish);
     
     toast.promise(promise, {
-      loading: `AI Analyzing & Generating visuals for ${fish.scientific_name}...`,
+      loading: `Enriching Data & Generating HD Media for ${fish.scientific_name}...`,
       success: (result) => {
         return (
           <div className="flex flex-col gap-1">
             <span>Imported {fish.scientific_name}!</span>
-            <button 
-              onClick={() => {
-                setSel(result);
-              }}
-              className="text-xs font-bold underline text-blue-400 hover:text-blue-300 text-left"
-            >
-              Edit & Refine Details →
-            </button>
+            <span className="text-[10px] text-muted-foreground italic">Redirecting to detail view...</span>
           </div>
         );
       },
@@ -232,6 +225,12 @@ export default function SpeciesPage() {
 
     try {
       const result = await promise;
+      if (result && result.id) {
+        // Automatically redirect to the new Species Detail card
+        setTimeout(() => {
+          router.push(`/dashboard/species/${result.id}`);
+        }, 1500);
+      }
       loadLocal(search);
       setGlobalResults(prev => prev.filter(item => item.spec_code !== fish.spec_code));
     } catch (err) {
