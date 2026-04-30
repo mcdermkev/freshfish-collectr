@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { Plus, Database, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Plus, Database, Sparkles, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MASTER_SPECIES_LIST } from "@/lib/data/master-species";
+import { refreshAllSpeciesImages } from "@/lib/actions/imagen";
 
 export default function AdminFormClient() {
   const supabase = createClient();
@@ -87,9 +88,59 @@ export default function AdminFormClient() {
     }
     setFormLoading(false);
   };
+  
+  const handleRefreshImages = async () => {
+    setFormLoading(true);
+    const promise = refreshAllSpeciesImages();
+    
+    toast.promise(promise, {
+      loading: "Initializing Imagen 4.0 & Scanning Database...",
+      success: (data: any) => {
+        return `${data.message} ${data.stats ? `(${data.stats.success} succeeded, ${data.stats.failed} failed)` : ""}`;
+      },
+      error: "Image sync failed. Check console for details.",
+    });
+
+    try {
+      await promise;
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    }
+    setFormLoading(false);
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
+      {/* AI Image Mastery */}
+      <Card className="md:col-span-2 border-ocean-500/30 bg-gradient-to-br from-card via-ocean-500/5 to-card shadow-2xl shadow-ocean-500/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-ocean-600 to-reef bg-clip-text text-transparent">
+            <RefreshCw className="w-6 h-6 text-ocean-600 animate-spin-slow" />
+            Vertex AI Media Synchronization
+          </CardTitle>
+          <CardDescription>
+            Scan the entire database for species missing imagery and generate photorealistic 8k macro photography using Google Imagen 4.0.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 space-y-2 text-sm text-muted-foreground">
+            <p>• Uses <strong>imagen-4.0-generate-001</strong> for ultra-HD aquatic realism.</p>
+            <p>• Automatically uploads to <code>species-images</code> storage bucket.</p>
+            <p>• Updates <code>image_url</code> permanently in the Supabase table.</p>
+          </div>
+          <Button 
+            size="lg"
+            className="w-full md:w-auto px-8 bg-ocean-600 hover:bg-ocean-700 text-white shadow-lg shadow-ocean-600/20 gap-2"
+            onClick={handleRefreshImages}
+            disabled={formLoading}
+          >
+            {formLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Sync All Missing Images
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Manual Entry */}
       <Card className="border-border/50">
         <CardHeader>
