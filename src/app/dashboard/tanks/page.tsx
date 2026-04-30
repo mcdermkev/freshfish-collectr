@@ -60,18 +60,25 @@ export default function TanksPage() {
   const loadTanks = useCallback(async () => {
     setLoading(true);
     const { data: tanksData, error: tErr } = await (supabase.from("tanks") as any)
-      .select("*, tank_livestock(quantity)")
+      .select("*, tank_livestock(quantity), water_parameters(*)")
       .order("created_at", { ascending: false });
 
     if (tErr) console.error("Tanks fetch error:", tErr);
-    console.log("Tank List with Counts:", tanksData);
 
     if (tanksData) {
-      const typedTanks = tanksData as unknown as Tank[];
-      setTanks(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(typedTanks)) return prev;
-        return typedTanks;
+      // Sort water parameters manually for each tank to get the latest 3
+      const tanksWithLogs = (tanksData as any[]).map(tank => {
+        const sortedLogs = (tank.water_parameters as any[])?.sort((a, b) => 
+          new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime()
+        ).slice(0, 3) || [];
+        
+        return {
+          ...tank,
+          logs: sortedLogs
+        };
       });
+
+      setTanks(tanksWithLogs as unknown as Tank[]);
       
       const counts: Record<string, number> = {};
       for (const tank of tanksData) {
@@ -79,10 +86,7 @@ export default function TanksPage() {
         counts[tank.id] = total;
       }
       
-      setLivestockCounts(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(counts)) return prev;
-        return counts;
-      });
+      setLivestockCounts(counts);
     }
     setLoading(false);
   }, [supabase]);
@@ -327,76 +331,154 @@ export default function TanksPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tanks.map((tank) => (
-            <Card
-              key={tank.id}
-              className="border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-lg transition-all duration-200 group"
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <Link href={`/dashboard/tanks/${tank.id}`}>
-                    <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors cursor-pointer">
-                      {tank.name}
-                    </CardTitle>
-                  </Link>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => openEditDialog(tank)}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-                      onClick={() => {
-                        setDeletingTank(tank);
-                        setDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="text-xs gap-1">
-                    {tankTypeIcon(tank.tank_type)}
-                    {tank.tank_type}
-                  </Badge>
-                  {tank.volume_gallons && (
-                    <Badge variant="outline" className="text-xs">
-                      {tank.volume_gallons}gal / {tank.volume_liters}L
-                    </Badge>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tanks.map((tank: any) => {
+            const lastLogDate = tank.logs?.[0] ? new Date(tank.logs[0].logged_at) : null;
+            const needsUpdate = lastLogDate ? (Date.now() - lastLogDate.getTime() > 7 * 24 * 60 * 60 * 1000) : true;
+
+            return (
+              <Card
+                key={tank.id}
+                className="relative overflow-hidden border-border/40 bg-background/40 backdrop-blur-xl hover:shadow-2xl hover:shadow-ocean-500/10 transition-all duration-500 group border-[0.5px]"
+              >
+                {/* Immersive Hero Background */}
+                <div className="absolute inset-0 -z-10 overflow-hidden">
+                  {tank.cover_image_url ? (
+                    <>
+                      <img 
+                        src={tank.cover_image_url} 
+                        className="w-full h-full object-cover blur-2xl opacity-20 scale-110 group-hover:scale-125 transition-transform duration-1000"
+                        alt=""
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/60 to-background" />
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-ocean-900/20 via-aqua-900/10 to-background animate-pulse opacity-30" />
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Fish className="w-3.5 h-3.5" />
-                  {livestockCounts[tank.id] || 0} livestock
-                </div>
-                {tank.notes && (
-                  <p className="text-xs text-muted-foreground/70 line-clamp-2">
-                    {tank.notes}
-                  </p>
+
+                {/* Status Indicator Pulse */}
+                {needsUpdate && (
+                  <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-coral opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-coral"></span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-coral/80 bg-coral/5 px-2 py-0.5 rounded-full border border-coral/20 backdrop-blur-sm">
+                      Update Needed
+                    </span>
+                  </div>
                 )}
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-1 text-primary hover:text-primary/80"
-                >
-                  <Link href={`/dashboard/tanks/${tank.id}`}>
-                    View Details →
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+
+                <CardHeader className="relative pb-2 pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <Link href={`/dashboard/tanks/${tank.id}`}>
+                        <CardTitle className="text-xl font-bold group-hover:text-ocean-400 transition-colors cursor-pointer flex items-center gap-2">
+                          {tank.name}
+                        </CardTitle>
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-tighter bg-white/5 border-white/10 text-muted-foreground backdrop-blur-md">
+                          {tank.tank_type}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-white/10 rounded-full"
+                        onClick={() => openEditDialog(tank)}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-red-500/10 rounded-full text-destructive"
+                        onClick={() => {
+                          setDeletingTank(tank);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-6 pt-2">
+                  {/* Glassmorphic Stats Row */}
+                  <div className="flex items-center gap-3">
+                    <div className="px-3 py-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-2 shadow-inner">
+                      <Fish className="w-3.5 h-3.5 text-ocean-400" />
+                      <span className="text-xs font-bold">{livestockCounts[tank.id] || 0}</span>
+                    </div>
+                    {tank.volume_gallons && (
+                      <div className="px-3 py-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-2 shadow-inner">
+                        <Container className="w-3.5 h-3.5 text-aqua-400" />
+                        <span className="text-xs font-bold">{tank.volume_gallons}g</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Health Snapshot Section */}
+                  <div className="space-y-3 p-3 rounded-2xl bg-black/20 border border-white/5 backdrop-blur-sm">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Health Snapshot</p>
+                      <Droplets className="w-3 h-3 text-ocean-500/50" />
+                    </div>
+                    
+                    {tank.logs && tank.logs.length > 0 ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] text-muted-foreground uppercase font-bold">pH</span>
+                          <span className="text-xs font-mono font-bold text-reef">{tank.logs[0].ph || "—"}</span>
+                        </div>
+                        <div className="h-6 w-[1px] bg-white/5" />
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] text-muted-foreground uppercase font-bold">Temp</span>
+                          <span className="text-xs font-mono font-bold text-coral">{tank.logs[0].temperature_c || "—"}°C</span>
+                        </div>
+                        <div className="h-6 w-[1px] bg-white/5" />
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] text-muted-foreground uppercase font-bold">NO3</span>
+                          <span className="text-xs font-mono font-bold text-aqua-400">{tank.logs[0].nitrate_ppm || "—"}</span>
+                        </div>
+                        <div className="h-6 w-[1px] bg-white/5" />
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-[9px] text-muted-foreground uppercase font-bold">Trend</span>
+                          <div className="flex items-center gap-0.5">
+                            {tank.logs.slice(0, 3).reverse().map((log: any, idx: number) => (
+                              <div 
+                                key={log.id} 
+                                className="w-1.5 bg-ocean-500/40 rounded-full"
+                                style={{ height: `${Math.min((log.ph || 7) * 2, 12)}px` }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground italic text-center py-1">No health data logged yet</p>
+                    )}
+                  </div>
+
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="w-full h-10 rounded-xl bg-ocean-600/10 hover:bg-ocean-600/20 text-ocean-400 text-xs font-bold gap-2 group/btn"
+                  >
+                    <Link href={`/dashboard/tanks/${tank.id}`}>
+                      Enter Control Center
+                      <Waves className="w-3.5 h-3.5 group-hover/btn:animate-pulse" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
