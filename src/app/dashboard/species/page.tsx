@@ -208,25 +208,34 @@ export default function SpeciesPage() {
 
     setImportingIds(prev => new Set(prev).add(fish.spec_code));
     try {
-      const result = await importSpecies(fish);
-      toast.success(
-        <div className="flex flex-col gap-1">
-          <span>Imported {fish.scientific_name}!</span>
-          <button 
-            onClick={() => {
-              setSel(result);
-            }}
-            className="text-xs font-bold underline text-blue-400 hover:text-blue-300 text-left"
-          >
-            Edit & Refine Details →
-          </button>
-        </div>,
-        { duration: 6000 }
-      );
+    const promise = importSpecies(fish);
+    
+    toast.promise(promise, {
+      loading: `AI Analyzing & Generating visuals for ${fish.scientific_name}...`,
+      success: (result) => {
+        return (
+          <div className="flex flex-col gap-1">
+            <span>Imported {fish.scientific_name}!</span>
+            <button 
+              onClick={() => {
+                setSel(result);
+              }}
+              className="text-xs font-bold underline text-blue-400 hover:text-blue-300 text-left"
+            >
+              Edit & Refine Details →
+            </button>
+          </div>
+        );
+      },
+      error: "Import failed. Please try again.",
+    });
+
+    try {
+      const result = await promise;
       loadLocal(search);
       setGlobalResults(prev => prev.filter(item => item.spec_code !== fish.spec_code));
     } catch (err) {
-      toast.error("Import failed");
+      console.error(err);
     } finally {
       setImportingIds(prev => {
         const next = new Set(prev);
@@ -490,11 +499,16 @@ export default function SpeciesPage() {
                     <span>ID: {s.spec_code}</span>
                   </div>
                   <Button 
-                    className="w-full h-8 text-xs gap-2 bg-indigo-600 hover:bg-indigo-700"
+                    className="w-full h-8 text-[10px] gap-2 bg-gradient-to-r from-indigo-600 to-ocean-600 hover:shadow-lg shadow-indigo-500/10"
                     onClick={() => handleImport(s)}
+                    disabled={importingIds.has(s.spec_code)}
                   >
-                    <Plus className="w-3 h-3" />
-                    Import to App
+                    {importingIds.has(s.spec_code) ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    {importingIds.has(s.spec_code) ? "Generating..." : "AI Import & Generate"}
                   </Button>
                 </CardContent>
               </Card>

@@ -2,8 +2,10 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-
+import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
 import { scrapeFishBase, getSpeciesDetails } from '@/lib/services/fishbase';
+import { generateSpeciesImage } from '@/lib/actions/imagen';
 
 export async function searchGlobalFishBase(searchTerm: string) {
   if (!searchTerm || searchTerm.length < 3) return [];
@@ -17,33 +19,72 @@ export async function searchGlobalFishBase(searchTerm: string) {
 
 export async function importSpecies(species: any) {
   const supabase = await createServerSupabaseClient();
+  const commonName = species.common_name || `${species.genus} ${species.species_epithet}`;
   
-  console.log(`[Import] Enriching data for: ${species.scientific_name}`);
+  console.log(`[Import] Processing: ${commonName} (${species.scientific_name})`);
   
-  let enrichedData: any = {};
+  // 1. Scraping enrichment (FishBase)
+  let scrapedData: any = {};
   if (species.spec_code) {
     try {
-      enrichedData = await getSpeciesDetails(species.spec_code);
+      scrapedData = await getSpeciesDetails(species.spec_code);
     } catch (e) {
       console.warn(`[Import] Detail enrichment failed for ${species.scientific_name}`, e);
     }
   }
 
+  // 2. AI behavioral enrichment (Gemini 3)
+  // We use Gemini to fill in the gaps for aggression, difficulty, and diet which FishBase often lacks
+  let aiEnrichment: any = {};
+  try {
+    const { text } = await generateText({
+      model: google("gemini-3-flash"),
+      system: "You are an aquatic life behavior specialist. Based on the scientific name and common name, provide accurate behavioral data.",
+      prompt: `Analyze the fish: ${commonName} (${species.scientific_name}). Provide a JSON object with: aggression_level (peaceful, semi-aggressive, aggressive), care_difficulty (easy, intermediate, advanced), and diet (herbivore, omnivore, carnivore). Return ONLY JSON.`,
+    });
+    aiEnrichment = JSON.parse(text);
+  } catch (err) {
+    console.warn("[Import] AI behavioral enrichment failed:", err);
+  }
+
+  // 3. Image Generation & Storage (Imagen 4.0)
+  let finalImageUrl = species.image_url;
+  try {
+    const base64Data = await generateSpeciesImage(commonName, species.scientific_name);
+    if (base64Data) {
+      const buffer = Buffer.from(base64Data, "base64");
+      const fileName = `import-${Date.now()}-${species.scientific_name.replace(/\s+/g, '-').toLowerCase()}.png`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("species-images")
+        .upload(fileName, buffer, { contentType: "image/png" });
+
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from("species-images").getPublicUrl(fileName);
+        finalImageUrl = urlData.publicUrl;
+      }
+    }
+  } catch (err) {
+    console.warn("[Import] Image generation failed:", err);
+  }
+
   const finalSpecies = {
     ...species,
-    ...enrichedData,
-    // Ensure we don't overwrite with nulls if we already had data
-    temp_min_c: enrichedData.temp_min_c ?? species.temp_min_c,
-    temp_max_c: enrichedData.temp_max_c ?? species.temp_max_c,
-    ph_min: enrichedData.ph_min ?? species.ph_min,
-    ph_max: enrichedData.ph_max ?? species.ph_max,
-    max_size_cm: enrichedData.max_size_cm ?? species.max_size_cm,
-    notes: enrichedData.notes ?? species.notes,
+    ...scrapedData,
+    ...aiEnrichment,
+    image_url: finalImageUrl,
+    // Precedence: AI/Scraped > Original
+    temp_min_c: scrapedData.temp_min_c ?? species.temp_min_c,
+    temp_max_c: scrapedData.temp_max_c ?? species.temp_max_c,
+    ph_min: scrapedData.ph_min ?? species.ph_min,
+    ph_max: scrapedData.ph_max ?? species.ph_max,
+    max_size_cm: scrapedData.max_size_cm ?? species.max_size_cm,
+    notes: scrapedData.notes ?? species.notes,
   };
 
   const { data, error } = await (supabase.from('species') as any)
     .upsert({
-      common_name: finalSpecies.common_name || `${finalSpecies.genus} ${finalSpecies.species_epithet}`,
+      common_name: commonName,
       scientific_name: finalSpecies.scientific_name,
       genus: finalSpecies.genus,
       species_epithet: finalSpecies.species_epithet,
@@ -56,7 +97,11 @@ export async function importSpecies(species: any) {
       ph_min: finalSpecies.ph_min,
       ph_max: finalSpecies.ph_max,
       max_size_cm: finalSpecies.max_size_cm,
-    }, { onConflict: 'scientific_name' }) // Use scientific name for conflict to avoid duplicates
+      aggression_level: finalSpecies.aggression_level,
+      care_difficulty: finalSpecies.care_difficulty,
+      diet: finalSpecies.diet,
+      image_url: finalSpecies.image_url,
+    }, { onConflict: 'scientific_name' })
     .select()
     .single();
 
