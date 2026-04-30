@@ -171,6 +171,7 @@ async function fetchFromScraper(searchTerm: string) {
               max_size_cm: 15
             });
           } else if (isSciName) {
+            const parts = name.split(/\s+/);
             results[existingIdx].scientific_name = name;
             results[existingIdx].genus = parts[0];
             results[existingIdx].species_epithet = parts.slice(1).join(' ');
