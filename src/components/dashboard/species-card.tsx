@@ -67,7 +67,10 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
     setUsePlaceholder(false);
     
     try {
-      const generatedUrl = await generateSpeciesImage(species.common_name, species.scientific_name);
+      const generatedUrl = await generateSpeciesImage(
+        species.common_name ?? "", 
+        species.scientific_name ?? undefined
+      );
       if (generatedUrl) {
         setImgUrl(generatedUrl);
         setUsePlaceholder(false);
