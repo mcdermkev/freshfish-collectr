@@ -134,7 +134,11 @@ async function processSpeciesSync(species: any[]) {
 
   for (const s of species) {
     try {
-      if (successCount > 0 || failCount > 0) await sleep(3000); 
+      // Strict throttle to avoid Vertex AI 429 Resource Exhausted errors
+      if (successCount > 0 || failCount > 0) {
+        console.log(`[Sync] Throttling for 5s before next generation...`);
+        await sleep(5000); 
+      }
 
       const dataUrl = await generateSpeciesImage(s.common_name, s.scientific_name);
       if (!dataUrl) throw new Error("Generation failed");
