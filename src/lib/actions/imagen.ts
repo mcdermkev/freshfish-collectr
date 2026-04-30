@@ -46,7 +46,7 @@ export async function generateSpeciesImage(
 
       if (!token.token) throw new Error("Failed to retrieve access token");
 
-      const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${creds.project_id}/locations/${location}/publishers/google/models/imagegeneration@006:predict`;
+      const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${creds.project_id}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`;
 
       const fetchResponse = await fetch(endpoint, {
         method: 'POST',
@@ -65,7 +65,9 @@ export async function generateSpeciesImage(
 
       if (!fetchResponse.ok) {
         const errBody = await fetchResponse.text();
-        throw new Error(`Vertex AI REST Error: ${fetchResponse.status} - ${errBody}`);
+        const err = new Error(`Vertex AI REST Error: ${fetchResponse.status} - ${errBody}`);
+        (err as any).status = fetchResponse.status;
+        throw err;
       }
 
       const resultData = await fetchResponse.json();
@@ -85,11 +87,12 @@ export async function generateSpeciesImage(
       console.log(`[Imagen REST] Generation successful for ${speciesName}.`);
       return dataUrl;
     } catch (error: any) {
-      const isRateLimit = error.message?.includes("429");
+      const statusCode = error.status || 0;
+      const isRetryable = statusCode === 429 || statusCode >= 500;
       
-      if (attempt < retries && isRateLimit) {
+      if (attempt < retries && isRetryable) {
         const waitTime = backoff * Math.pow(2, attempt);
-        console.warn(`[Imagen REST] Rate limited. Retrying in ${waitTime}ms... (Attempt ${attempt + 1}/${retries})`);
+        console.warn(`[Imagen REST] Retryable error (${statusCode}). Retrying in ${waitTime}ms... (Attempt ${attempt + 1}/${retries})`);
         await sleep(waitTime);
         continue;
       }
