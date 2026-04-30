@@ -38,6 +38,7 @@ import { SpeciesCard } from "@/components/dashboard/species-card";
 import { semanticSearchInterceptor } from "@/lib/actions/search";
 import Fuse from "fuse.js";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const aggrColor = (l: string | null) => {
   if (l === "peaceful") return "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20";
