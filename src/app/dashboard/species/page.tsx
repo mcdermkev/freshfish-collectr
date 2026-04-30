@@ -137,6 +137,8 @@ export default function SpeciesPage() {
   }, [supabase]);
 
   useEffect(() => {
+    setHasSearchedGlobal(false); // Allow global search to re-trigger on new input
+    setGlobalResults([]); // CLEAR STALE SEARCH STATE
     const timer = setTimeout(() => {
       loadLocal(search);
     }, 300);
@@ -165,13 +167,14 @@ export default function SpeciesPage() {
       toast.error("Please enter at least 3 characters");
       return;
     }
+    console.log(`[UI] Triggering Global Search for: "${search}"`);
     setFbLoading(true);
     try {
       const results = await searchGlobalFishBase(search);
       setGlobalResults(results as any[]);
       setHasSearchedGlobal(true);
       if ((results as any[]).length === 0) {
-        toast.info("Species not found in global index. Use Manual Entry.");
+        toast.info(`No results for "${search}" in global index.`);
       }
     } catch (err) {
       console.error("Global search error:", err);
@@ -540,23 +543,26 @@ export default function SpeciesPage() {
               </DialogHeader>
             </div>
             <div className="p-4 space-y-4">
-              {sel?.image_url && (
-                <div className="w-full aspect-video rounded-xl overflow-hidden border border-border/50 shadow-inner bg-muted">
-                  <img 
-                    src={sel.image_url} 
-                    alt={sel?.common_name || "Species"} 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).classList.add('hidden');
-                      (e.target as HTMLImageElement).parentElement?.classList.add('bg-gradient-to-br', 'from-ocean-900/40', 'to-slate-900/60', 'flex', 'items-center', 'justify-center');
-                      const p = document.createElement('p');
-                      p.className = 'text-[10px] uppercase tracking-widest text-white/40 font-mono text-center px-4';
-                      p.innerText = 'AI Rendering Failed - Check Connectivity';
-                      (e.target as HTMLImageElement).parentElement?.appendChild(p);
-                    }}
-                  />
-                </div>
-              )}
+              <div className="w-full aspect-video rounded-xl overflow-hidden border border-border/50 shadow-inner bg-muted relative group">
+                <img 
+                  src={(sel?.image_url && !sel.image_url.includes("unsplash.com")) ? sel.image_url : "/images/placeholder-species.png"} 
+                  alt={sel?.common_name || "Species"} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/images/placeholder-species.png";
+                  }}
+                />
+                {(!sel?.image_url || sel?.image_url?.includes("unsplash.com")) && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-ocean-900/40 to-slate-900/60 p-4 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-white/40 font-mono">
+                      Scientific Sketch Rendering
+                    </p>
+                    <p className="text-xs text-white/60 italic mt-1 px-4 line-clamp-1">
+                      {sel?.scientific_name || "Unknown Species"}
+                    </p>
+                  </div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="secondary" className="capitalize gap-1 text-[10px]">{catIcon(sel?.category || "fish")}{sel?.category}</Badge>
                 {sel?.aggression_level && <Badge variant="outline" className={`capitalize text-[10px] ${aggrColor(sel.aggression_level)}`}><Shield className="w-3 h-3 mr-1" />{sel.aggression_level}</Badge>}

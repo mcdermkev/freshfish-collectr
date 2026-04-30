@@ -9,10 +9,13 @@ import { generateSpeciesImage } from '@/lib/actions/imagen';
 
 export async function searchGlobalFishBase(searchTerm: string) {
   if (!searchTerm || searchTerm.length < 3) return [];
+  console.log(`[FishBase Action] Global Search Initiated for: "${searchTerm}"`);
   try {
-    return await scrapeFishBase(searchTerm);
+    const results = await scrapeFishBase(searchTerm);
+    console.log(`[FishBase Action] Search for "${searchTerm}" returned ${results.length} results`);
+    return results;
   } catch (error) {
-    console.error('[FishBase] Global Search Failed:', error);
+    console.error('[FishBase Action] Global Search Failed:', error);
     return [];
   }
 }
@@ -35,23 +38,51 @@ export async function importSpecies(species: any) {
 
   // 2. AI Behavioral Mapping (Gemini 3 Flash)
   // Strict mapping to local tags as requested by the user
-  let aiEnrichment: any = {};
+  let aiEnrichment: any = {
+    aggression_level: "Unknown Behavior",
+    care_difficulty: "Unknown Difficulty",
+    diet: "omnivore",
+    notes: ""
+  };
+
   try {
-    const { text } = await generateText({
-      model: google("gemini-3-flash"),
-      system: "You are an aquatic life behavior specialist. Map the species to our specific local tags.",
+    const response = await generateText({
+      model: google("gemini-1.5-flash"),
+      system: "You are an aquatic life behavior specialist. Map the species to our specific local tags. Return ONLY a valid JSON object without markdown formatting.",
       prompt: `Analyze ${commonName} (${species.scientific_name}). 
       Map it strictly to these options:
       - aggression_level: "peaceful", "semi-aggressive", or "aggressive"
       - care_difficulty: "beginner", "intermediate", or "advanced"
       - diet: "herbivore", "omnivore", or "carnivore"
       
-      Provide a brief 1-2 sentence bio for the 'notes' field as well.
-      Return ONLY a JSON object.`,
+      Provide a brief 1-2 sentence bio for the 'notes' field as well.`,
     });
-    aiEnrichment = JSON.parse(text);
+
+    // Defensive check for blocked response or empty candidates
+    // Vercel AI SDK generateText usually handles this, but we'll be extra safe
+    if (!response || !response.text) {
+      console.warn(`[Import] Gemini response was blocked or empty for ${commonName}. Response metadata:`, response);
+    } else {
+      // Clean potential markdown backticks from AI response
+      const cleanedJson = response.text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(cleanedJson);
+      
+      // Merge with defaults
+      aiEnrichment = {
+        ...aiEnrichment,
+        ...parsed,
+        // Ensure values are strings and not null/undefined
+        aggression_level: parsed.aggression_level || "Unknown Behavior",
+        care_difficulty: parsed.care_difficulty || "Unknown Difficulty",
+      };
+      console.log(`[Import] Gemini enrichment successful for ${commonName}:`, aiEnrichment);
+    }
   } catch (err) {
-    console.warn("[Import] AI behavioral enrichment failed:", err);
+    console.warn(`[Import] AI behavioral enrichment failed or was blocked for ${commonName}. Error:`, err);
+    // [DEBUG] Log more detail if possible
+    if (typeof err === 'object' && err !== null && 'response' in err) {
+      console.warn("[Import] Raw API Error Response:", (err as any).response);
+    }
   }
 
   // 3. Instant HD Image Generation (Imagen 4.0)
@@ -80,9 +111,12 @@ export async function importSpecies(species: any) {
         console.log(`[Import] Unique AI image generated and uploaded: ${finalImageUrl}`);
       } else {
         console.error(`[Import] Storage upload failed: ${uploadError.message}`);
+        // Ensure we don't return a partial or failed URL
+        finalImageUrl = null;
       }
     } else {
       console.warn(`[Import] AI image generation returned null for ${commonName}`);
+      finalImageUrl = null; // STOPS THE GOLDFISH ILLUSION
     }
   } catch (err) {
     console.warn("[Import] Instant image generation failed:", err);

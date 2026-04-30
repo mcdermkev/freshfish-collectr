@@ -96,9 +96,13 @@ export default function AdminFormClient() {
     toast.promise(promise, {
       loading: "Initializing Imagen 4.0 & Scanning Database...",
       success: (data: any) => {
-        return `${data.message} ${data.stats ? `(${data.stats.success} succeeded, ${data.stats.failed} failed)` : ""}`;
+        const stats = data.stats;
+        if (stats && stats.failed > 0) {
+          return `Sync finished: ${stats.success} succeeded, ${stats.failed} failed. Check server logs for safety filters.`;
+        }
+        return `${data.message} ${stats ? `(${stats.success} species updated)` : ""}`;
       },
-      error: "Image sync failed. Check console for details.",
+      error: (err) => `Image sync failed: ${err.message || "Unknown error"}`,
     });
 
     try {

@@ -144,10 +144,17 @@ async function fetchFromScraper(searchTerm: string) {
           const name = match[2].trim();
           
           // Skip junk
-          if (name.length < 5 || name.includes('Search') || name.includes('Back')) continue;
+          if (name.length < 3 || name.includes('Search') || name.includes('Back') || name.includes('Privacy')) continue;
           
-          // If we haven't seen this ID, or if this "name" looks more like a scientific name (Capitalized genus)
-          // we favor the scientific name for the display.
+          // [STRICT FILTER] Only include results that actually contain the search term in the name
+          // This prevents sidebars/featured species (like the infamous "Red Devil") from hijacking results.
+          const lowerName = name.toLowerCase();
+          const lowerSearch = searchTerm.toLowerCase();
+          if (!lowerName.includes(lowerSearch)) {
+            // Check scientific name as well if possible (though broadRegex usually gets common names here)
+            continue;
+          }
+
           const existingIdx = results.findIndex(r => r.spec_code === specCode);
           const isSciName = /^[A-Z][a-z]+ [a-z]+/.test(name);
 
@@ -161,15 +168,9 @@ async function fetchFromScraper(searchTerm: string) {
               species_epithet: isSciName ? parts.slice(1).join(' ') : '',
               category: 'fish',
               notes: `Global ID: ${specCode}`,
-              temp_min_c: 20,
-              temp_max_c: 25,
-              ph_min: 6.0,
-              ph_max: 7.5,
               max_size_cm: 15
             });
           } else if (isSciName) {
-            // Update scientific name if we found a better match for the same ID
-            const parts = name.split(/\s+/);
             results[existingIdx].scientific_name = name;
             results[existingIdx].genus = parts[0];
             results[existingIdx].species_epithet = parts.slice(1).join(' ');

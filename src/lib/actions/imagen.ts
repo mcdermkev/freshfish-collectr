@@ -9,9 +9,36 @@ const projectId = process.env.GOOGLE_CLOUD_PROJECT || "getnexusaisolutions";
 const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1"; // Using us-central1 for stable Imagen 4 availability
 const modelId = "imagen-4.0-generate-001";
 
-const client = new PredictionServiceClient({
-  apiEndpoint: `${location}-aiplatform.googleapis.com`,
-});
+// Lazy client initialization to ensure env vars are ready and credentials are fresh
+let clientInstance: PredictionServiceClient | null = null;
+
+function getClient() {
+  if (clientInstance) return clientInstance;
+
+  if (!process.env.GOOGLE_CREDENTIALS_JSON) {
+    throw new Error('CRITICAL: GOOGLE_CREDENTIALS_JSON is missing from environment variables');
+  }
+
+  try {
+    const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+    console.log(`[Imagen 4] Initializing client for: ${creds.client_email}`);
+    
+    clientInstance = new PredictionServiceClient({
+      apiEndpoint: `${location}-aiplatform.googleapis.com`,
+      credentials: {
+        client_email: creds.client_email,
+        private_key: creds.private_key.split(String.raw`\n`).join('\n'),
+        project_id: creds.project_id || projectId,
+      },
+      projectId: projectId,
+    });
+    
+    return clientInstance;
+  } catch (err: any) {
+    console.error("[Imagen 4] Failed to parse credentials:", err.message);
+    throw new Error(`Authentication Setup Failed: ${err.message}`);
+  }
+}
 
 // Helper for delays
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,6 +77,7 @@ export async function generateSpeciesImage(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const client = getClient();
       const result = await client.predict(request);
       const response = result[0];
       

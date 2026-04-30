@@ -66,12 +66,26 @@ export default async function SpeciesDetailPage({ params }: SpeciesDetailPagePro
 
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="liquid-glass rounded-2xl overflow-hidden border border-border/50 aspect-video relative group">
+          <div className="liquid-glass rounded-2xl overflow-hidden border border-border/50 aspect-video relative group bg-muted">
             <img 
-              src={species.image_url || "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=800&q=fish"} 
+              src={(species.image_url && !species.image_url.includes("unsplash.com")) ? species.image_url : "/images/placeholder-species.png"} 
               alt={species.common_name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
+            {(!species.image_url || species.image_url.includes("unsplash.com")) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-ocean-900/40 to-slate-900/60 p-6 text-center">
+                <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3 shadow-2xl backdrop-blur-sm">
+                  {catIcon(species.category)}
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-mono">
+                  Scientific Sketch Rendering
+                </p>
+                <p className="text-sm text-white/60 italic mt-1 px-4">
+                  {species.scientific_name || "Unknown Species"}
+                </p>
+                <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/paper.png')]" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
           </div>
 
