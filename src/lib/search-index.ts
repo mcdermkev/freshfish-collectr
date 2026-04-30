@@ -3,17 +3,18 @@ import {
   VectorStoreIndex, 
   Settings 
 } from "llamaindex";
-import { Gemini, GeminiEmbedding } from "@llamaindex/google";
+import { Gemini, GeminiEmbedding, GEMINI_MODEL, GEMINI_EMBEDDING_MODEL } from "@llamaindex/google";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 // Configure LlamaIndex to use Gemini 3
+// We use type casting to GEMINI_MODEL as the library might not have the 2026 models in its enum yet
 Settings.llm = new Gemini({
-  model: "gemini-3-flash",
+  model: "gemini-3-flash" as GEMINI_MODEL,
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
 Settings.embedModel = new GeminiEmbedding({
-  model: "text-embedding-3", // Using Gemini 3 series embedding model
+  model: "text-embedding-3" as GEMINI_EMBEDDING_MODEL, // Using Gemini 3 series embedding model
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
