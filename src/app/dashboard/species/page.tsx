@@ -190,7 +190,7 @@ export default function SpeciesPage() {
       if (res.url) {
         setSel({...sel, image_url: res.url});
         // Also update in the main list
-        setFiltered(prev => prev.map(s => s.id === sel.id ? {...s, image_url: res.url} : s));
+        setSpecies(prev => prev.map(s => s.id === sel.id ? {...s, image_url: res.url} : s));
       }
     } catch (err) {
       console.error("Force sync failed:", err);
