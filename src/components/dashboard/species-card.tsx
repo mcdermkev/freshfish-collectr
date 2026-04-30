@@ -46,19 +46,19 @@ export function SpeciesCard({ species, onClick }: SpeciesCardProps) {
   const [usePlaceholder, setUsePlaceholder] = useState(!species.image_url);
 
   useEffect(() => {
-    async function handleImage() {
-      // Ignore stock photos to force unique AI generation
-      const isStockPhoto = species.image_url?.includes("unsplash.com");
-      
-      if (species.image_url && !isStockPhoto) {
-        setImgUrl(species.image_url);
-        setUsePlaceholder(false);
-        setImgLoading(true);
-      } else {
-        await handleManualRefresh();
-      }
+    // Only set the image URL if it exists and is NOT a stock photo
+    // We NO LONGER auto-trigger generation on mount to save quota
+    const isStockPhoto = species.image_url?.includes("unsplash.com");
+    
+    if (species.image_url && !isStockPhoto) {
+      setImgUrl(species.image_url);
+      setUsePlaceholder(false);
+      setImgLoading(true);
+    } else {
+      setImgUrl(null);
+      setUsePlaceholder(true);
+      setImgLoading(false);
     }
-    handleImage();
   }, [species.image_url, species.common_name]);
 
   const handleManualRefresh = async (e?: React.MouseEvent) => {
