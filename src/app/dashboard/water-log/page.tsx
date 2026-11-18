@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +11,63 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
-import { Droplets, Plus, Thermometer, ShieldCheck } from "lucide-react";
+import { Activity, Droplets, Plus, RefreshCw, ShieldCheck, Thermometer } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceArea } from "recharts";
 import { Switch } from "@/components/ui/switch";
 import type { Tank, WaterParameter, TankLivestockWithSpecies } from "@/lib/types/database";
+
+type EcologicalNode = {
+  index: number;
+  channel_id: string;
+  site_code: string;
+  site_name: string;
+  parameter_code: string;
+  parameter_name: string;
+  unit: string;
+  latest_value: number;
+  mean_value: number;
+  std_value: number;
+  z_score_latest: number;
+  spin_latest: number;
+  binary_latest: number;
+  valid_points: number;
+  source_mode: string;
+};
+
+type EcologicalIsingPayload = {
+  provenance: {
+    source_label: string;
+    source_mode: string;
+    captured_at_utc: string;
+    station_count: number;
+    channel_count: number;
+  };
+  nodes: EcologicalNode[];
+  magnetization: number;
+  frustration_pct: number;
+  frustrated_triangles_pct: number;
+  exact_ground_state_energy: number;
+  sampler_benchmark: {
+    min_energy: number;
+    mean_energy: number;
+    tau_int: number;
+    ess: number;
+    beta: number;
+    n_samples: number;
+    exact_match: boolean;
+  };
+};
+
+type UsgsStationRow = {
+  site_code: string;
+  site_name: string;
+  tempC: number | null;
+  ph: number | null;
+  dissolvedOxygen: number | null;
+  conductance: number | null;
+  channelCount: number;
+};
 
 export default function WaterLogPage() {
   const supabase = createClient();
@@ -26,6 +79,81 @@ export default function WaterLogPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showSafeZones, setShowSafeZones] = useState(true);
+
+  // Live USGS Ecological Stream & Ising Refinery Telemetry
+  const [ecologicalIsing, setEcologicalIsing] = useState<EcologicalIsingPayload | null>(null);
+  const [telemetryLoading, setTelemetryLoading] = useState(true);
+  const [telemetryError, setTelemetryError] = useState<string | null>(null);
+
+  const fetchRefineryJson = useCallback(async (signal?: AbortSignal) => {
+    const res = await fetch("/data/live_empirical_streams.json", {
+      cache: "no-store",
+      signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const eco: EcologicalIsingPayload | undefined = json?.ecological_ising;
+    if (!eco?.nodes?.length) {
+      throw new Error("Missing ecological_ising payload");
+    }
+    return eco;
+  }, []);
+
+  const loadRefineryTelemetry = useCallback(async () => {
+    setTelemetryLoading(true);
+    setTelemetryError(null);
+    try {
+      const eco = await fetchRefineryJson();
+      setEcologicalIsing(eco);
+    } catch (err: unknown) {
+      setTelemetryError(err instanceof Error ? err.message : "Telemetry unavailable");
+    } finally {
+      setTelemetryLoading(false);
+    }
+  }, [fetchRefineryJson]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchRefineryJson(controller.signal)
+      .then((eco) => {
+        setEcologicalIsing(eco);
+        setTelemetryError(null);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name === "AbortError") return;
+        setTelemetryError(err instanceof Error ? err.message : "Telemetry unavailable");
+      })
+      .finally(() => {
+        setTelemetryLoading(false);
+      });
+    return () => controller.abort();
+  }, [fetchRefineryJson]);
+
+  const stationRows = useMemo<UsgsStationRow[]>(() => {
+    if (!ecologicalIsing?.nodes?.length) return [];
+    const byCode = new Map<string, UsgsStationRow>();
+    for (const node of ecologicalIsing.nodes) {
+      let row = byCode.get(node.site_code);
+      if (!row) {
+        row = {
+          site_code: node.site_code,
+          site_name: node.site_name,
+          tempC: null,
+          ph: null,
+          dissolvedOxygen: null,
+          conductance: null,
+          channelCount: 0,
+        };
+        byCode.set(node.site_code, row);
+      }
+      row.channelCount += 1;
+      if (node.parameter_code === "00010") row.tempC = node.latest_value;
+      else if (node.parameter_code === "00400") row.ph = node.latest_value;
+      else if (node.parameter_code === "00300") row.dissolvedOxygen = node.latest_value;
+      else if (node.parameter_code === "00095") row.conductance = node.latest_value;
+    }
+    return Array.from(byCode.values());
+  }, [ecologicalIsing]);
 
   // Form
   const [tempC, setTempC] = useState("");
@@ -201,6 +329,140 @@ export default function WaterLogPage() {
           </div>
         </div>
       )}
+
+      {/* Live USGS Ecological Stream Baseline (Refinery Telemetry) */}
+      <Card className="border-border/50 bg-card/80">
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Activity className="w-4 h-4 text-ocean-500" />
+                <CardTitle className="text-base">
+                  Live USGS Ecological Stream Baseline (Refinery Telemetry)
+                </CardTitle>
+                {ecologicalIsing?.provenance && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    {ecologicalIsing.provenance.source_mode}
+                  </Badge>
+                )}
+              </div>
+              {ecologicalIsing?.provenance && (
+                <p className="text-xs text-muted-foreground">
+                  {ecologicalIsing.provenance.station_count} USGS stations •{" "}
+                  {ecologicalIsing.provenance.channel_count} sensor channels • Captured{" "}
+                  {new Date(ecologicalIsing.provenance.captured_at_utc).toLocaleString()}
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => loadRefineryTelemetry()}
+              className="gap-1.5 h-8 text-xs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${telemetryLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {telemetryLoading && !ecologicalIsing ? (
+            <Skeleton className="h-28 w-full" />
+          ) : telemetryError && !ecologicalIsing ? (
+            <div className="text-xs text-muted-foreground rounded-lg border border-dashed p-3">
+              Live USGS refinery baseline offline ({telemetryError}). Tank charts below remain operational.
+            </div>
+          ) : ecologicalIsing ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground block">
+                    Exact Ground Energy (E₀)
+                  </span>
+                  <span className="text-lg font-bold">
+                    {ecologicalIsing.exact_ground_state_energy.toFixed(2)}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground block">
+                    Ising Frustration
+                  </span>
+                  <span className="text-lg font-bold">
+                    {ecologicalIsing.frustration_pct.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground block">
+                    Sokal τ_int
+                  </span>
+                  <span className="text-lg font-bold">
+                    {ecologicalIsing.sampler_benchmark.tau_int.toFixed(2)}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground block">
+                    Stations / Channels
+                  </span>
+                  <span className="text-lg font-bold">
+                    {ecologicalIsing.provenance.station_count} / {ecologicalIsing.provenance.channel_count}
+                  </span>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border/50 text-muted-foreground">
+                      <th className="text-left py-2 px-2 font-medium">USGS Station</th>
+                      <th className="text-right py-2 px-2 font-medium">Temp (°C)</th>
+                      <th className="text-right py-2 px-2 font-medium">pH</th>
+                      <th className="text-right py-2 px-2 font-medium">DO (mg/L)</th>
+                      <th className="text-right py-2 px-2 font-medium">Conductance (µS/cm)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stationRows.map((st) => (
+                      <tr key={st.site_code} className="border-b border-border/30 hover:bg-accent/20">
+                        <td className="py-2 px-2 font-medium">
+                          <span>{st.site_name}</span>{" "}
+                          <span className="text-[10px] font-mono text-muted-foreground">
+                            ({st.site_code})
+                          </span>
+                        </td>
+                        <td className="text-right py-2 px-2 tabular-nums">
+                          {st.tempC !== null ? `${st.tempC.toFixed(1)}°C` : "—"}
+                        </td>
+                        <td className="text-right py-2 px-2 tabular-nums">
+                          {st.ph !== null ? st.ph.toFixed(1) : "—"}
+                        </td>
+                        <td className="text-right py-2 px-2 tabular-nums">
+                          {st.dissolvedOxygen !== null ? st.dissolvedOxygen.toFixed(1) : "—"}
+                        </td>
+                        <td className="text-right py-2 px-2 tabular-nums">
+                          {st.conductance !== null ? st.conductance.toFixed(0) : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {ecologicalIsing.nodes.map((node) => (
+                  <span
+                    key={node.channel_id}
+                    className="text-[10px] px-2 py-0.5 rounded-md border border-border/50 bg-muted/40 font-mono"
+                    title={`${node.site_name} — ${node.parameter_name}`}
+                  >
+                    {node.channel_id}: {node.latest_value} {node.unit} (s={node.spin_latest > 0 ? "+1" : "-1"})
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
 
       {tanks.length === 0 ? (
         <Card className="border-dashed border-2 border-border/50 bg-card/50">
